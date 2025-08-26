@@ -1,0 +1,130 @@
+﻿/* Global Styles */
+html, body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.bg-gold {
+    background-color: #ffd700 !important;
+    color: #000 !important;
+}
+
+/* QR Scanner Styles */
+.scan-overlay {
+    border: 3px solid #00ff00;
+    border-radius: 15px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+}
+
+.scan-result {
+    border-left: 4px solid;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.scan-result.valid { 
+    border-color: #28a745; 
+    background-color: #d4edda; 
+}
+
+.scan-result.invalid { 
+    border-color: #dc3545; 
+    background-color: #f8d7da; 
+}
+
+.scan-result.used { 
+    border-color: #ffc107; 
+    background-color: #fff3cd; 
+}
+
+.scan-result.expired { 
+    border-color: #6c757d; 
+    background-color: #e2e3e5; 
+}
+
+/* Card Hover Effects */
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* Stats Boxes */
+.stat-box {
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Success/Error Messages */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Form Styles */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Footer */
+.footer {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+    margin-top: 50px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .stat-box {
+        min-height: 60px;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}

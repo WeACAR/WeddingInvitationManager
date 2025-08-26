@@ -1,0 +1,50 @@
+﻿            return File(fileBytes, "application/zip", zipFileName);
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error creating download: {ex.Message}";
+            return RedirectToAction("Details", "Events", new { id = eventId });
+        }
+    }
+
+    public async Task<IActionResult> DownloadTemplates(int eventId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var eventEntity = await _context.Events
+                .Include(e => e.Templates)
+                .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
+
+            if (eventEntity == null)
+                return NotFound();
+
+            if (!eventEntity.Templates.Any())
+            {
+                TempData["Error"] = "No templates found to download.";
+                return RedirectToAction(nameof(Templates), new { eventId });
+            }
+
+            // Create zip file with templates
+            var zipFileName = $"{eventEntity.Name}_Templates_{DateTime.UtcNow:yyyyMMdd}.zip";
+            var zipPath = Path.Combine(_environment.WebRootPath, "uploads", "temp", zipFileName);
+
+            using (var archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            {
+                foreach (var template in eventEntity.Templates)
+                {
+                    var imagePath = Path.Combine(_environment.WebRootPath, template.ImagePath.TrimStart('/'));
+                    if (File.Exists(imagePath))
+                    {
+                        var fileName = $"{template.Name}.png";
+                        archive.CreateEntryFromFile(imagePath, fileName);
+                    }
+                }
+            }
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(zipPath);
+            
+            // Clean up temp file
+            System.IO.File.Delete(zipPath);
+
+            return File(fileBytes, "application/zip", zipFileName);

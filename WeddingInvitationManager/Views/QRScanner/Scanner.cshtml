@@ -1,0 +1,417 @@
+﻿@model WeddingInvitationManager.Models.ViewModels.QRScannerViewModel
+
+@{
+    ViewData["Title"] = "QR Scanner - " + Model.EventName;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-qrcode"></i> Fast QR Scanner - @Model.EventName</h4>
+                    <small>Scan multiple QR codes quickly</small>
+                </div>
+                <div class="card-body">
+                    <div id="video-container" class="position-relative mb-3">
+                        <video id="qr-video" class="w-100" style="max-height: 400px;" playsinline></video>
+                        <div class="scan-overlay"></div>
+                        <div id="scan-status" class="position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-dark text-white">
+                            Ready to scan
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="guardName" class="form-label">Guard Name</label>
+                                <input type="text" class="form-control" id="guardName" placeholder="Enter your name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="camera-select" class="form-label">Camera</label>
+                                <select id="camera-select" class="form-select">
+                                    <option value="">Select Camera...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-3">
+                        <button id="start-btn" class="btn btn-success">
+                            <i class="fas fa-play"></i> Start Scanner
+                        </button>
+                        <button id="stop-btn" class="btn btn-danger" disabled>
+                            <i class="fas fa-stop"></i> Stop Scanner
+                        </button>
+                        <button id="toggle-sound" class="btn btn-outline-secondary">
+                            <i class="fas fa-volume-up"></i> Sound: ON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Live Stats -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Live Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stat-box bg-success text-white p-2 rounded mb-2">
+                                <div class="h4 mb-0" id="valid-count">0</div>
+                                <small>Valid</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-box bg-danger text-white p-2 rounded mb-2">
+                                <div class="h4 mb-0" id="invalid-count">0</div>
+                                <small>Invalid</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-box bg-warning text-white p-2 rounded">
+                                <div class="h4 mb-0" id="used-count">0</div>
+                                <small>Already Used</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-box bg-info text-white p-2 rounded">
+                                <div class="h4 mb-0" id="scan-rate">0/min</div>
+                                <small>Scan Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Scans -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Scans</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="recent-scans" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Recent scans will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import QrScanner from 'https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js';
+
+const eventId = @Model.EventId;
+let qrScanner = null;
+let soundEnabled = true;
+let scanCount = 0;
+let validCount = 0;
+let invalidCount = 0;
+let usedCount = 0;
+let lastScanTime = Date.now();
+let scanTimes = [];
+
+// Audio context for scan sounds
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+// Elements
+const video = document.getElementById('qr-video');
+const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
+const guardNameInput = document.getElementById('guardName');
+const cameraSelect = document.getElementById('camera-select');
+const scanStatus = document.getElementById('scan-status');
+const toggleSoundBtn = document.getElementById('toggle-sound');
+
+// SignalR connection
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/qrScanHub")
+    .build();
+
+// Initialize SignalR
+async function initSignalR() {
+    try {
+        await connection.start();
+        await connection.invoke("JoinEventGroup", eventId.toString());
+        console.log("SignalR connected");
+    } catch (err) {
+        console.error("SignalR connection error:", err);
+    }
+}
+
+// Load cameras
+async function loadCameras() {
+    try {
+        const cameras = await QrScanner.listCameras(true);
+        cameraSelect.innerHTML = '<option value="">Select Camera...</option>';
+        
+        cameras.forEach((camera, index) => {
+            const option = document.createElement('option');
+            option.value = camera.id;
+            option.textContent = camera.label || Camera ;
+            cameraSelect.appendChild(option);
+        });
+
+        if (cameras.length > 0) {
+            cameraSelect.value = cameras[0].id;
+        }
+    } catch (error) {
+        console.error('Error loading cameras:', error);
+    }
+}
+
+// Play sound
+function playSound(frequency, duration) {
+    if (!soundEnabled) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+}
+
+// Update scan rate
+function updateScanRate() {
+    const now = Date.now();
+    scanTimes = scanTimes.filter(time => now - time < 60000); // Keep only last minute
+    const rate = scanTimes.length;
+    document.getElementById('scan-rate').textContent = ${rate}/min;
+}
+
+// Process QR scan
+async function processQRScan(result) {
+    const guardName = guardNameInput.value.trim();
+    if (!guardName) {
+        alert('Please enter your guard name');
+        return;
+    }
+
+    try {
+        scanStatus.textContent = 'Processing...';
+        scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-warning text-dark';
+
+        const response = await fetch('/QRScanner/ProcessScan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({
+                QRCode: result.data,
+                GuardName: guardName,
+                EventId: eventId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            handleScanResult(data.data);
+        } else {
+            handleScanError(data.message);
+        }
+    } catch (error) {
+        console.error('Error processing scan:', error);
+        handleScanError('Network error occurred');
+    }
+}
+
+// Handle scan result
+function handleScanResult(result) {
+    scanCount++;
+    scanTimes.push(Date.now());
+    
+    let statusClass, statusText, soundFreq;
+    
+    switch (result.Result) {
+        case 1: // Valid
+            validCount++;
+            statusClass = 'bg-success text-white';
+            statusText =  Valid - ;
+            soundFreq = 800; // High pitch for success
+            document.getElementById('valid-count').textContent = validCount;
+            break;
+        case 2: // Already Used
+            usedCount++;
+            statusClass = 'bg-warning text-dark';
+            statusText =  Already Used - ;
+            soundFreq = 400; // Medium pitch for warning
+            document.getElementById('used-count').textContent = usedCount;
+            break;
+        default: // Invalid/Expired/NotFound
+            invalidCount++;
+            statusClass = 'bg-danger text-white';
+            statusText =  ;
+            soundFreq = 200; // Low pitch for error
+            document.getElementById('invalid-count').textContent = invalidCount;
+            break;
+    }
+    
+    scanStatus.textContent = statusText;
+    scanStatus.className = position-absolute top-0 start-0 m-2 px-3 py-1 rounded ;
+    
+    playSound(soundFreq, 0.2);
+    addToRecentScans(result);
+    updateScanRate();
+    
+    // Auto-clear status after 3 seconds
+    setTimeout(() => {
+        if (qrScanner) {
+            scanStatus.textContent = 'Ready to scan';
+            scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-dark text-white';
+        }
+    }, 3000);
+}
+
+// Handle scan error
+function handleScanError(message) {
+    scanStatus.textContent = Error: ;
+    scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-danger text-white';
+    playSound(150, 0.5); // Very low pitch for errors
+}
+
+// Add to recent scans list
+function addToRecentScans(result) {
+    const recentScans = document.getElementById('recent-scans');
+    const scanDiv = document.createElement('div');
+    
+    let resultClass;
+    switch (result.Result) {
+        case 1: resultClass = 'valid'; break;
+        case 2: resultClass = 'used'; break;
+        default: resultClass = 'invalid'; break;
+    }
+    
+    scanDiv.className = scan-result ;
+    scanDiv.innerHTML = 
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <strong></strong>
+                
+                <br><small></small>
+            </div>
+            <small></small>
+        </div>
+    ;
+    
+    recentScans.insertBefore(scanDiv, recentScans.firstChild);
+    
+    // Keep only last 20 scans
+    const scans = recentScans.children;
+    if (scans.length > 20) {
+        recentScans.removeChild(scans[scans.length - 1]);
+    }
+}
+
+// Start scanning
+async function startScanning() {
+    const guardName = guardNameInput.value.trim();
+    const selectedCamera = cameraSelect.value;
+    
+    if (!guardName) {
+        alert('Please enter your guard name');
+        return;
+    }
+    
+    if (!selectedCamera) {
+        alert('Please select a camera');
+        return;
+    }
+
+    try {
+        qrScanner = new QrScanner(
+            video,
+            processQRScan,
+            {
+                preferredCamera: selectedCamera,
+                highlightScanRegion: false,
+                highlightCodeOutline: false,
+                maxScansPerSecond: 25, // Very fast scanning
+                returnDetailedScanResult: true
+            }
+        );
+
+        await qrScanner.start();
+        
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        cameraSelect.disabled = true;
+        guardNameInput.disabled = true;
+        
+        scanStatus.textContent = 'Scanner active - Ready to scan';
+        scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-success text-white';
+        
+    } catch (error) {
+        console.error('Error starting scanner:', error);
+        alert('Failed to start camera: ' + error.message);
+    }
+}
+
+// Stop scanning
+function stopScanning() {
+    if (qrScanner) {
+        qrScanner.destroy();
+        qrScanner = null;
+    }
+    
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    cameraSelect.disabled = false;
+    guardNameInput.disabled = false;
+    
+    scanStatus.textContent = 'Scanner stopped';
+    scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-secondary text-white';
+}
+
+// Toggle sound
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    toggleSoundBtn.innerHTML = soundEnabled 
+        ? '<i class="fas fa-volume-up"></i> Sound: ON'
+        : '<i class="fas fa-volume-mute"></i> Sound: OFF';
+    toggleSoundBtn.className = soundEnabled 
+        ? 'btn btn-outline-secondary'
+        : 'btn btn-outline-danger';
+}
+
+// Event listeners
+startBtn.addEventListener('click', startScanning);
+stopBtn.addEventListener('click', stopScanning);
+toggleSoundBtn.addEventListener('click', toggleSound);
+
+// Initialize
+window.addEventListener('load', async () => {
+    await loadCameras();
+    await initSignalR();
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (qrScanner) {
+        qrScanner.destroy();
+    }
+    if (connection) {
+        connection.stop();
+    }
+});
+</script>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+}
