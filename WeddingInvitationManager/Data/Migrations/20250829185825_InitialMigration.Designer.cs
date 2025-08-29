@@ -9,11 +9,11 @@ using WeddingInvitationManager.Data;
 
 #nullable disable
 
-namespace WeddingInvitationManager.Data.Migrations
+namespace WeddingInvitationManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250826185039_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250829185825_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

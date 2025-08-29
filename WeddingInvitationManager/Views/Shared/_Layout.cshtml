@@ -1,9 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<WeddingInvitationManager.Resources.SharedResource> Localizer
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Wedding Invitation Manager</title>
+    <title>@ViewData["Title"] - @Localizer["WeddingInvitationManager"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -14,7 +17,7 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-heart"></i> Wedding Manager
+                    <i class="fas fa-heart"></i> @Localizer["WeddingInvitationManager"]
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -24,31 +27,34 @@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home"></i> Home
+                                <i class="fas fa-home"></i> @Localizer["Home"]
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Events" asp-action="Index">
-                                <i class="fas fa-calendar"></i> Events
+                                <i class="fas fa-calendar"></i> @Localizer["Events"]
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Contacts" asp-action="Index">
-                                <i class="fas fa-users"></i> Contacts
+                                <i class="fas fa-users"></i> @Localizer["Contacts"]
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Invitations" asp-action="Index">
-                                <i class="fas fa-envelope"></i> Invitations
+                                <i class="fas fa-envelope"></i> @Localizer["Invitations"]
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="QRScanner" asp-action="Index">
-                                <i class="fas fa-qrcode"></i> QR Scanner
+                                <i class="fas fa-qrcode"></i> @Localizer["QRScanner"]
                             </a>
                         </li>
                     </ul>
-                    <partial name="_LoginPartial" />
+                    <div class="d-flex align-items-center gap-3">
+                        <partial name="_LanguageSwitcher" />
+                        <partial name="_AuthStatus" />
+                    </div>
                 </div>
             </div>
         </nav>

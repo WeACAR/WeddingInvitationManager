@@ -1,0 +1,254 @@
+@model WeddingInvitationManager.Models.Event
+
+@{
+    ViewData["Title"] = $"{Model.Name} - Dashboard";
+    var stats = ViewBag.Stats;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>@Model.Name Dashboard</h1>
+        <p class="text-muted mb-0">Event overview and statistics</p>
+    </div>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Details
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3>@stats.TotalContacts</h3>
+                <p class="mb-0">Total Contacts</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-paper-plane fa-2x mb-2"></i>
+                <h3>@stats.SentInvitations</h3>
+                <p class="mb-0">Sent Invitations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3>@stats.UsedInvitations</h3>
+                <p class="mb-0">Used Invitations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-star fa-2x mb-2"></i>
+                <h3>@stats.VipContacts</h3>
+                <p class="mb-0">VIP Guests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bars -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Invitation Progress</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var sentPercentage = stats.TotalContacts > 0 ? (stats.SentInvitations * 100 / stats.TotalContacts) : 0;
+                    var usedPercentage = stats.SentInvitations > 0 ? (stats.UsedInvitations * 100 / stats.SentInvitations) : 0;
+                }
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Invitations Sent</span>
+                        <span>@stats.SentInvitations/@stats.TotalContacts (@sentPercentage%)</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @sentPercentage%"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="d-flex justify-content-between">
+                        <span>Invitations Used</span>
+                        <span>@stats.UsedInvitations/@stats.SentInvitations (@usedPercentage%)</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: @usedPercentage%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Guest Categories</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var vipPercentage = stats.TotalContacts > 0 ? (stats.VipContacts * 100 / stats.TotalContacts) : 0;
+                    var regularContacts = stats.TotalContacts - stats.VipContacts;
+                    var regularPercentage = stats.TotalContacts > 0 ? (regularContacts * 100 / stats.TotalContacts) : 0;
+                }
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>VIP Guests</span>
+                        <span>@stats.VipContacts (@vipPercentage%)</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: @vipPercentage%"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="d-flex justify-content-between">
+                        <span>Regular Guests</span>
+                        <span>@regularContacts (@regularPercentage%)</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-secondary" role="progressbar" style="width: @regularPercentage%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@Model.Id" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-users"></i><br>
+                            Manage Contacts
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@Model.Id" class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-import"></i><br>
+                            Import Contacts
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a asp-controller="Invitations" asp-action="Templates" asp-route-eventId="@Model.Id" class="btn btn-outline-warning w-100 mb-2">
+                            <i class="fas fa-envelope"></i><br>
+                            Manage Invitations
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a asp-controller="QRScanner" asp-action="Scanner" asp-route-eventId="@Model.Id" class="btn btn-outline-info w-100 mb-2">
+                            <i class="fas fa-qrcode"></i><br>
+                            QR Scanner
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Contacts</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Contacts.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var contact in Model.Contacts.OrderByDescending(c => c.CreatedAt).Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <strong>@contact.Name</strong>
+                                    @if (contact.IsVip)
+                                    {
+                                        <span class="badge bg-info ms-1">VIP</span>
+                                    }
+                                    <br>
+                                    <small class="text-muted">@contact.PhoneNumber</small>
+                                </div>
+                                <small class="text-muted">@contact.CreatedAt.ToString("MMM dd")</small>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-3">
+                        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@Model.Id" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No contacts added yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Invitations</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Invitations.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var invitation in Model.Invitations.OrderByDescending(i => i.CreatedAt).Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <strong>@invitation.Contact.Name</strong>
+                                    @if (invitation.IsUsed)
+                                    {
+                                        <span class="badge bg-success">Used</span>
+                                    }
+                                    else if (invitation.IsSent)
+                                    {
+                                        <span class="badge bg-warning">Sent</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Created</span>
+                                    }
+                                    <br>
+                                    <small class="text-muted">@invitation.Contact.PhoneNumber</small>
+                                </div>
+                                <small class="text-muted">@invitation.CreatedAt.ToString("MMM dd")</small>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-3">
+                        <a asp-controller="Invitations" asp-action="Templates" asp-route-eventId="@Model.Id" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No invitations created yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

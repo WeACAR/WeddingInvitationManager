@@ -1,0 +1,310 @@
+@model WeddingInvitationManager.Models.Event
+
+@{
+    ViewData["Title"] = "Send Invitations";
+    var stats = ViewBag.Stats;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Send Invitations</h1>
+        <p class="text-muted mb-0">Generate and send invitations for @Model.Name</p>
+    </div>
+    <div class="btn-group">
+        <a asp-action="Templates" asp-route-eventId="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-images"></i> Manage Templates
+        </a>
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Event
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3>@Model.Contacts.Count</h3>
+                <p class="mb-0">Total Contacts</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <i class="fas fa-paper-plane fa-2x mb-2"></i>
+                <h3>@(stats?.SentCount ?? 0)</h3>
+                <p class="mb-0">Sent</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3>@(stats?.PendingCount ?? Model.Contacts.Count)</h3>
+                <p class="mb-0">Pending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-danger text-white">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h3>@(stats?.FailedCount ?? 0)</h3>
+                <p class="mb-0">Failed</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Contacts.Any())
+{
+    <div class="alert alert-info">
+        <h5><i class="fas fa-info-circle"></i> No Contacts Found</h5>
+        <p class="mb-0">You need to add contacts before sending invitations.</p>
+        <hr>
+        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@Model.Id" class="btn btn-primary">
+            <i class="fas fa-users"></i> Add Contacts
+        </a>
+    </div>
+}
+else if (!Model.Templates.Any())
+{
+    <div class="alert alert-warning">
+        <h5><i class="fas fa-exclamation-triangle"></i> No Templates Found</h5>
+        <p class="mb-0">You need to create at least one template before sending invitations.</p>
+        <hr>
+        <a asp-action="CreateTemplate" asp-route-eventId="@Model.Id" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Template
+        </a>
+    </div>
+}
+else
+{
+    <!-- Send Options -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket"></i> Send Invitations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="SendBulk" method="post">
+                        <input type="hidden" name="eventId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label for="templateId" class="form-label">Select Template</label>
+                            <select name="templateId" id="templateId" class="form-select">
+                                <option value="">Auto-select (Default for regular, VIP for VIP guests)</option>
+                                @foreach (var template in Model.Templates)
+                                {
+                                    <option value="@template.Id">
+                                        @template.Name 
+                                        @if (template.IsDefault) { <text>(Default)</text> }
+                                        @if (template.IsVipTemplate) { <text>(VIP)</text> }
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-text">Leave empty to auto-select templates based on guest type</div>
+                        </div>
+                        
+                        <!-- Progress Bar (hidden initially) -->
+                        <div id="progressContainer" class="mb-3" style="display: none;">
+                            <label class="form-label">Sending Progress</label>
+                            <div class="progress">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div id="progressText" class="form-text">Preparing to send...</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" id="sendBtn" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i> Generate & Send All Invitations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-download"></i> Download Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Download" asp-route-eventId="@Model.Id" class="btn btn-outline-info">
+                            <i class="fas fa-download"></i> Download All Invitations
+                        </a>
+                        <a asp-action="DownloadTemplates" asp-route-eventId="@Model.Id" class="btn btn-outline-secondary">
+                            <i class="fas fa-file-archive"></i> Download Templates
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Template Preview -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-eye"></i> Template Preview
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Templates.Any())
+                    {
+                        var defaultTemplate = Model.Templates.FirstOrDefault(t => t.IsDefault) ?? Model.Templates.First();
+                        <div class="text-center">
+                            <img src="@defaultTemplate.ImagePath" alt="@defaultTemplate.Name" class="img-fluid" style="max-height: 200px;">
+                            <p class="mt-2 mb-0"><strong>@defaultTemplate.Name</strong></p>
+                            <small class="text-muted">
+                                @if (defaultTemplate.IsDefault)
+                                {
+                                    <span class="badge bg-primary">Default</span>
+                                }
+                                @if (defaultTemplate.IsVipTemplate)
+                                {
+                                    <span class="badge bg-warning">VIP</span>
+                                }
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact List -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-users"></i> Contacts (@Model.Contacts.Count)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var contact in Model.Contacts)
+                        {
+                            var invitation = Model.Invitations.FirstOrDefault(i => i.ContactId == contact.Id);
+                            <tr>
+                                <td>@contact.Name</td>
+                                <td>@contact.PhoneNumber</td>
+                                <td>@(contact.Category ?? "General")</td>
+                                <td>
+                                    @if (contact.IsVip)
+                                    {
+                                        <span class="badge bg-warning">VIP</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Regular</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (invitation != null)
+                                    {
+                                        @if (invitation.IsSent)
+                                        {
+                                            <span class="badge bg-success">Sent</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info">Generated</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">Pending</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Progress tracking for bulk send
+        document.getElementById('sendBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show progress bar
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('sendBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            // Start the actual form submission
+            const form = e.target.closest('form');
+            form.submit();
+            
+            // Start progress monitoring
+            const eventId = @Model.Id;
+            monitorProgress(eventId);
+        });
+        
+        function monitorProgress(eventId) {
+            const interval = setInterval(function() {
+                fetch('@Url.Action("GetSendProgress", "Invitations")?eventId=' + eventId)
+                    .then(response => response.json())
+                    .then(data => {
+                        const percentage = Math.round((data.sent / data.total) * 100);
+                        document.getElementById('progressBar').style.width = percentage + '%';
+                        document.getElementById('progressText').textContent = 
+                            `Sent ${data.sent} of ${data.total} invitations (${percentage}%)`;
+                        
+                        if (data.sent >= data.total) {
+                            clearInterval(interval);
+                            document.getElementById('progressBar').classList.remove('progress-bar-animated');
+                            document.getElementById('progressText').textContent = 'All invitations sent!';
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error monitoring progress:', error);
+                        clearInterval(interval);
+                    });
+            }, 2000);
+        }
+    </script>
+}

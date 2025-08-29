@@ -15,6 +15,7 @@
           "Microsoft.AspNetCore.Identity.UI": "8.0.8",
           "Microsoft.EntityFrameworkCore.Sqlite": "8.0.8",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.8",
+          "Npgsql": "8.0.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4",
           "QRCoder": "1.4.3",
           "SixLabors.ImageSharp": "3.1.5",
@@ -22,6 +23,14 @@
         },
         "runtime": {
           "WeddingInvitationManager.dll": {}
+        },
+        "resources": {
+          "ar/WeddingInvitationManager.resources.dll": {
+            "locale": "ar"
+          },
+          "en/WeddingInvitationManager.resources.dll": {
+            "locale": "en"
+          }
         }
       },
       "ClosedXML/0.102.2": {

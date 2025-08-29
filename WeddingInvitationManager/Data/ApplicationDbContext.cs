@@ -2,51 +2,64 @@
 using Microsoft.EntityFrameworkCore;
 using WeddingInvitationManager.Models;
 
-namespace WeddingInvitationManager.Data;
-
-public class ApplicationDbContext : IdentityDbContext
+namespace WeddingInvitationManager.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-    }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
 
-    public DbSet<Event> Events { get; set; }
-    public DbSet<Contact> Contacts { get; set; }
-    public DbSet<Invitation> Invitations { get; set; }
-    public DbSet<QRScan> QRScans { get; set; }
-    public DbSet<InvitationTemplate> InvitationTemplates { get; set; }
+        public DbSet<Event> Events { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Invitation> Invitations { get; set; }
+        public DbSet<QRScan> QRScans { get; set; }
+        public DbSet<InvitationTemplate> InvitationTemplates { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
 
-        // Event configuration
-        builder.Entity<Event>()
-            .HasIndex(e => e.UserId);
+            // Event configuration
+            builder.Entity<Event>()
+                .HasIndex(e => e.UserId);
 
-        // Contact configuration
-        builder.Entity<Contact>()
-            .HasIndex(c => new { c.EventId, c.PhoneNumber })
-            .IsUnique();
+            // Contact configuration
+            builder.Entity<Contact>()
+                .HasIndex(c => new { c.EventId, c.PhoneNumber })
+                .IsUnique();
 
-        // Invitation configuration
-        builder.Entity<Invitation>()
-            .HasIndex(i => i.QRCode)
-            .IsUnique();
+            // Invitation configuration
+            builder.Entity<Invitation>()
+                .HasIndex(i => i.QRCode)
+                .IsUnique();
 
-        builder.Entity<Invitation>()
-            .HasIndex(i => i.EventId);
+            builder.Entity<Invitation>()
+                .HasIndex(i => i.EventId);
 
-        // QRScan configuration
-        builder.Entity<QRScan>()
-            .HasIndex(q => q.InvitationId);
+            // QRScan configuration
+            builder.Entity<QRScan>()
+                .HasIndex(q => q.InvitationId);
 
-        builder.Entity<QRScan>()
-            .HasIndex(q => q.ScannedAt);
+            builder.Entity<QRScan>()
+                .HasIndex(q => q.ScannedAt);
 
-        // InvitationTemplate configuration
-        builder.Entity<InvitationTemplate>()
-            .HasIndex(t => t.EventId);
+            // InvitationTemplate configuration
+            builder.Entity<InvitationTemplate>()
+                .HasIndex(t => t.EventId);
+
+            // Configure DateTime properties to use UTC
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetColumnType("timestamp with time zone");
+                    }
+                }
+            }
+        }
     }
 }

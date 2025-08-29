@@ -15,15 +15,18 @@ public class QRScannerController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly IQRScanService _qrScanService;
+    private readonly HighPerformanceQRScanService _highPerfScanService;
     private readonly IHubContext<QRScanHub> _hubContext;
 
     public QRScannerController(
         ApplicationDbContext context, 
         IQRScanService qrScanService,
+        HighPerformanceQRScanService highPerfScanService,
         IHubContext<QRScanHub> hubContext)
     {
         _context = context;
         _qrScanService = qrScanService;
+        _highPerfScanService = highPerfScanService;
         _hubContext = hubContext;
     }
 
@@ -135,24 +138,59 @@ public class QRScannerController : Controller
     {
         try
         {
-            var scans = await _qrScanService.GetRecentScansAsync(eventId, count);
-            var result = scans.Select(s => new
-            {
-                s.Id,
-                GuestName = s.Invitation?.Contact?.Name ?? "Unknown",
-                s.ScannedBy,
-                s.ScannedAt,
-                s.Result,
-                s.Notes,
-                IsVip = s.Invitation?.Contact?.IsVip ?? false,
-                Category = s.Invitation?.Contact?.Category ?? ""
-            });
-
-            return Json(result);
+            var scans = await _highPerfScanService.GetRecentScansAsync(eventId, count);
+            return Json(new { success = true, data = scans });
         }
         catch (Exception ex)
         {
-            return Json(new { error = ex.Message });
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    // High-performance scan processing endpoint
+    [HttpPost]
+    public async Task<IActionResult> ProcessScan([FromBody] ProcessScanRequest request)
+    {
+        try
+        {
+            var result = await _highPerfScanService.ProcessScanAsync(
+                request.QRCode, 
+                request.GuardName, 
+                request.EventId);
+
+            // Broadcast to SignalR clients for real-time updates
+            await _hubContext.Clients.Group($"Event_{request.EventId}")
+                .SendAsync("ScanResult", new
+                {
+                    QRCode = request.QRCode,
+                    GuestName = result.GuestName,
+                    Result = result.Result.ToString(),
+                    IsVip = result.IsVip,
+                    Category = result.Category,
+                    ScannedAt = result.ScannedAt,
+                    GuardName = request.GuardName
+                });
+
+            return Json(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    // Get event statistics
+    [HttpGet]
+    public async Task<IActionResult> GetEventStats(int eventId)
+    {
+        try
+        {
+            var stats = await _highPerfScanService.GetEventStatisticsAsync(eventId);
+            return Json(new { success = true, data = stats });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
         }
     }
 

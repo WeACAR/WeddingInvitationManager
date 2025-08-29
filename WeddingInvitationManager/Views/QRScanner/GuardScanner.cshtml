@@ -1,0 +1,414 @@
+@model WeddingInvitationManager.Models.ViewModels.QRScannerViewModel
+
+@{
+    ViewData["Title"] = "Guard Scanner - " + Model.EventName;
+    Layout = null; // Use a minimal layout for guard interface
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .guard-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .scanner-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .scan-result {
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border-radius: 15px;
+        }
+        .valid-scan {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        .invalid-scan {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+            color: white;
+        }
+        .warning-scan {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        .scanner-input {
+            font-size: 1.5rem;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+        .scanner-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .guard-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 20px 0;
+        }
+        .stats-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 10px 15px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="guard-container">
+        <!-- Header -->
+        <div class="guard-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h2 class="mb-0">
+                            <i class="fas fa-shield-alt"></i> Security Scanner
+                        </h2>
+                        <p class="mb-0">@Model.EventName</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="d-inline-flex gap-3">
+                            <div class="stats-badge">
+                                <i class="fas fa-check-circle"></i>
+                                <span id="validCount">0</span> Valid
+                            </div>
+                            <div class="stats-badge">
+                                <i class="fas fa-times-circle"></i>
+                                <span id="invalidCount">0</span> Invalid
+                            </div>
+                            <div class="stats-badge">
+                                <i class="fas fa-clock"></i>
+                                <span id="currentTime">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Scanner -->
+        <div class="container flex-grow-1 py-4">
+            <div class="row justify-content-center h-100">
+                <div class="col-md-10">
+                    <div class="scanner-card p-4">
+                        <!-- Guard Name Input -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mx-auto">
+                                <label for="guardName" class="form-label">
+                                    <i class="fas fa-user-shield"></i> Guard Name
+                                </label>
+                                <input type="text" id="guardName" class="form-control" 
+                                       placeholder="Enter your name" required />
+                            </div>
+                        </div>
+
+                        <!-- QR Code Scanner -->
+                        <div class="row mb-4">
+                            <div class="col-md-8 mx-auto">
+                                <label for="qrInput" class="form-label">
+                                    <i class="fas fa-qrcode"></i> Scan QR Code
+                                </label>
+                                <input type="text" id="qrInput" class="form-control scanner-input" 
+                                       placeholder="Point scanner here or type QR code..." 
+                                       autocomplete="off" autofocus />
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Scanner will automatically process QR codes
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scan Result Display -->
+                        <div class="row mb-4">
+                            <div class="col-md-10 mx-auto">
+                                <div id="scanResult" class="scan-result text-center">
+                                    <div>
+                                        <i class="fas fa-qrcode fa-3x mb-3"></i>
+                                        <h4>Ready to Scan</h4>
+                                        <p class="mb-0">Point your scanner at the QR input field above</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Scans -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5><i class="fas fa-history"></i> Recent Scans</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Guest</th>
+                                                <th>Result</th>
+                                                <th>Category</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentScansTable">
+                                            <!-- Recent scans will be added here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elements for feedback -->
+    <audio id="successSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LFeSYELofN8tiLOQcZnP6xyWx0rlvGqGEbBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LFeSYELofN8tiLOQcZnP6xyWx0rlvGqGEbBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LFeSYELofN8tiLOQcZnP6xyWx0rlvGqA==" type="audio/wav">
+    </audio>
+    <audio id="errorSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LFeSYELofN8tiLOQcZnP6xyWx0rlvGqGEbBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LFeSYELofN8tiLOQcZnP6xyWx0rlvGqGEbBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LFeSYELofN8tiLOQcZnP6xyWx0rlvGqA==" type="audio/wav">
+    </audio>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+
+    <script>
+        let validScans = 0;
+        let invalidScans = 0;
+        let isProcessing = false;
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Auto-focus on QR input
+        setInterval(() => {
+            if (!isProcessing && document.activeElement !== document.getElementById('qrInput')) {
+                document.getElementById('qrInput').focus();
+            }
+        }, 1000);
+
+        // Process QR scan
+        document.getElementById('qrInput').addEventListener('input', function(e) {
+            const qrCode = e.target.value.trim();
+            const guardName = document.getElementById('guardName').value.trim();
+
+            if (qrCode && guardName && !isProcessing) {
+                processQRCode(qrCode, guardName);
+                e.target.value = ''; // Clear input for next scan
+            }
+        });
+
+        function processQRCode(qrCode, guardName) {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            
+            fetch('@Url.Action("ProcessScan")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    QRCode: qrCode,
+                    GuardName: guardName,
+                    EventId: @Model.EventId
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    displayScanResult(result.data);
+                    addToRecentScans(result.data, guardName);
+                    updateStats(result.data);
+                    playFeedbackSound(result.data.Result);
+                } else {
+                    displayError(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                displayError('Connection error. Please try again.');
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    isProcessing = false;
+                    document.getElementById('qrInput').focus();
+                }, 2000);
+            });
+        }
+
+        function displayScanResult(scanData) {
+            const resultDiv = document.getElementById('scanResult');
+            let resultClass, icon, title, message;
+
+            switch (scanData.Result) {
+                case 'Valid':
+                    resultClass = 'valid-scan';
+                    icon = 'fas fa-check-circle fa-3x';
+                    title = 'WELCOME!';
+                    message = `${scanData.GuestName} ${scanData.IsVip ? '(VIP)' : ''}`;
+                    break;
+                case 'AlreadyUsed':
+                    resultClass = 'warning-scan';
+                    icon = 'fas fa-exclamation-triangle fa-3x';
+                    title = 'ALREADY USED';
+                    message = `${scanData.GuestName} - Used at ${new Date(scanData.PreviouslyUsedAt).toLocaleTimeString()}`;
+                    break;
+                case 'Expired':
+                    resultClass = 'invalid-scan';
+                    icon = 'fas fa-times-circle fa-3x';
+                    title = 'EXPIRED';
+                    message = `${scanData.GuestName} - Invitation expired`;
+                    break;
+                case 'NotFound':
+                    resultClass = 'invalid-scan';
+                    icon = 'fas fa-question-circle fa-3x';
+                    title = 'INVALID';
+                    message = 'QR code not recognized';
+                    break;
+                default:
+                    resultClass = 'invalid-scan';
+                    icon = 'fas fa-times-circle fa-3x';
+                    title = 'ERROR';
+                    message = scanData.Message;
+            }
+
+            resultDiv.className = `scan-result text-center ${resultClass}`;
+            resultDiv.innerHTML = `
+                <div>
+                    <i class="${icon} mb-3"></i>
+                    <h3>${title}</h3>
+                    <p class="mb-0">${message}</p>
+                    ${scanData.Category ? `<small>Category: ${scanData.Category}</small>` : ''}
+                </div>
+            `;
+
+            // Auto-clear result after 5 seconds
+            setTimeout(() => {
+                resultDiv.className = 'scan-result text-center';
+                resultDiv.innerHTML = `
+                    <div>
+                        <i class="fas fa-qrcode fa-3x mb-3"></i>
+                        <h4>Ready to Scan</h4>
+                        <p class="mb-0">Point your scanner at the QR input field above</p>
+                    </div>
+                `;
+            }, 5000);
+        }
+
+        function displayError(message) {
+            const resultDiv = document.getElementById('scanResult');
+            resultDiv.className = 'scan-result text-center invalid-scan';
+            resultDiv.innerHTML = `
+                <div>
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <h4>Error</h4>
+                    <p class="mb-0">${message}</p>
+                </div>
+            `;
+        }
+
+        function addToRecentScans(scanData, guardName) {
+            const tbody = document.getElementById('recentScansTable');
+            const row = document.createElement('tr');
+            
+            const resultBadge = getResultBadge(scanData.Result);
+            const vipBadge = scanData.IsVip ? '<span class="badge bg-warning ms-1">VIP</span>' : '';
+            
+            row.innerHTML = `
+                <td>${new Date().toLocaleTimeString()}</td>
+                <td>${scanData.GuestName || 'Unknown'}${vipBadge}</td>
+                <td>${resultBadge}</td>
+                <td>${scanData.Category || '-'}</td>
+            `;
+            
+            tbody.insertBefore(row, tbody.firstChild);
+            
+            // Keep only last 10 rows
+            while (tbody.children.length > 10) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        }
+
+        function getResultBadge(result) {
+            switch (result) {
+                case 'Valid': return '<span class="badge bg-success">Valid</span>';
+                case 'AlreadyUsed': return '<span class="badge bg-warning">Used</span>';
+                case 'Expired': return '<span class="badge bg-danger">Expired</span>';
+                case 'NotFound': return '<span class="badge bg-secondary">Invalid</span>';
+                default: return '<span class="badge bg-dark">Error</span>';
+            }
+        }
+
+        function updateStats(scanData) {
+            if (scanData.Result === 'Valid') {
+                validScans++;
+                document.getElementById('validCount').textContent = validScans;
+            } else {
+                invalidScans++;
+                document.getElementById('invalidCount').textContent = invalidScans;
+            }
+        }
+
+        function playFeedbackSound(result) {
+            try {
+                if (result === 'Valid') {
+                    document.getElementById('successSound').play();
+                } else {
+                    document.getElementById('errorSound').play();
+                }
+            } catch (e) {
+                // Ignore audio errors
+            }
+        }
+
+        // Prevent form submission on Enter
+        document.getElementById('qrInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+
+        // Save guard name to localStorage
+        document.getElementById('guardName').addEventListener('input', function(e) {
+            localStorage.setItem('guardName', e.target.value);
+        });
+
+        // Restore guard name from localStorage
+        const savedGuardName = localStorage.getItem('guardName');
+        if (savedGuardName) {
+            document.getElementById('guardName').value = savedGuardName;
+        }
+
+        // Focus on QR input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('qrInput').focus();
+        });
+    </script>
+</body>
+</html>

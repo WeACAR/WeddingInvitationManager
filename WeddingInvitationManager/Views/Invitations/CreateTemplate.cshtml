@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Create Template";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Create Invitation Template</h1>
+        <p class="text-muted mb-0">Design a template for @ViewBag.EventName</p>
+    </div>
+    <div>
+        <a asp-action="Templates" asp-route-eventId="@ViewBag.EventId" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Templates
+        </a>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-image"></i> Template Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="CreateTemplate" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="eventId" value="@ViewBag.EventId" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="templateName" class="form-label">Template Name</label>
+                            <input type="text" name="templateName" id="templateName" class="form-control" placeholder="e.g., Gold Wedding Template" required />
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="imageFile" class="form-label">Background Image</label>
+                            <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" required />
+                            <div class="form-text">Recommended: 1080x1920px (Instagram Story size)</div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">QR Code Position</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="qrPositionX" class="form-label">X Position (pixels)</label>
+                            <input type="number" name="qrPositionX" id="qrPositionX" class="form-control" value="100" min="0" max="2000" />
+                            <div class="form-text">Distance from left edge</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="qrPositionY" class="form-label">Y Position (pixels)</label>
+                            <input type="number" name="qrPositionY" id="qrPositionY" class="form-control" value="100" min="0" max="3000" />
+                            <div class="form-text">Distance from top edge</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="qrSize" class="form-label">QR Code Size (pixels)</label>
+                            <input type="number" name="qrSize" id="qrSize" class="form-control" value="200" min="50" max="500" />
+                            <div class="form-text">Width and height of QR code</div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">Template Options</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="isDefault" id="isDefault" class="form-check-input" />
+                                <label for="isDefault" class="form-check-label">
+                                    <strong>Default Template</strong>
+                                    <br><small class="text-muted">Use this template for regular guests</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="isVipTemplate" id="isVipTemplate" class="form-check-input" />
+                                <label for="isVipTemplate" class="form-check-label">
+                                    <strong>VIP Template</strong>
+                                    <br><small class="text-muted">Special template for VIP guests</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Templates" asp-route-eventId="@ViewBag.EventId" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Template
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb"></i> Design Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Use high-resolution images (1080x1920px or higher)
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Leave space for the QR code placement
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Consider contrast for QR code visibility
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Test on different screen sizes
+                    </li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Common QR Positions</h6>
+                <div class="btn-group-vertical w-100" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setPosition(50, 50, 150)">
+                        Top Left Corner
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setPosition(465, 50, 150)">
+                        Top Right Corner
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setPosition(465, 1600, 150)">
+                        Bottom Right
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setPosition(50, 1600, 150)">
+                        Bottom Left
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setPosition(290, 900, 200)">
+                        Center
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-eye"></i> Preview
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="imagePreview" class="text-center text-muted">
+                    <i class="fas fa-image fa-2x"></i>
+                    <p class="mt-2">Upload an image to see preview</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setPosition(x, y, size) {
+            document.getElementById('qrPositionX').value = x;
+            document.getElementById('qrPositionY').value = y;
+            document.getElementById('qrSize').value = size;
+        }
+        
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').innerHTML = 
+                        '<img src="' + e.target.result + '" class="img-fluid" alt="Preview" style="max-height: 300px;">';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

@@ -1,5 +1,8 @@
-﻿@{
-    ViewData["Title"] = "Wedding Invitation Manager";
+﻿@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<WeddingInvitationManager.Resources.SharedResource> Localizer
+
+@{
+    ViewData["Title"] = @Localizer["Home"];
 }
 
 <div class="container">
@@ -9,13 +12,13 @@
             <div class="jumbotron bg-primary text-white text-center py-5 rounded mb-4">
                 <div class="container">
                     <h1 class="display-4">
-                        <i class="fas fa-heart"></i> Wedding Invitation Manager
+                        <i class="fas fa-heart"></i> @Localizer["WeddingInvitationManager"]
                     </h1>
                     <p class="lead">
-                        Manage your wedding invitations with QR codes, WhatsApp integration, and real-time guest tracking
+                        @Localizer["ManageYourWeddingInvitations"]
                     </p>
                     <hr class="my-4 bg-white">
-                    <p>Fast QR scanning, bulk operations, and comprehensive guest management in one platform</p>
+                    <p>@Localizer["FastQRScanningBulkOperations"]</p>
                 </div>
             </div>
 
@@ -25,10 +28,10 @@
                     <div class="card h-100 text-center border-primary">
                         <div class="card-body">
                             <i class="fas fa-calendar-plus fa-3x text-primary mb-3"></i>
-                            <h5 class="card-title">Create Event</h5>
-                            <p class="card-text">Set up a new wedding event with all the details</p>
+                            <h5 class="card-title">@Localizer["CreateEvent"]</h5>
+                            <p class="card-text">@Localizer["SetupNewWeddingEvent"]</p>
                             <a href="@Url.Action("Create", "Events")" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> New Event
+                                <i class="fas fa-plus"></i> @Localizer["NewEvent"]
                             </a>
                         </div>
                     </div>
@@ -38,10 +41,10 @@
                     <div class="card h-100 text-center border-success">
                         <div class="card-body">
                             <i class="fas fa-users fa-3x text-success mb-3"></i>
-                            <h5 class="card-title">Manage Contacts</h5>
-                            <p class="card-text">Import and organize your guest list</p>
+                            <h5 class="card-title">@Localizer["ManageContacts"]</h5>
+                            <p class="card-text">@Localizer["ImportAndOrganizeGuestList"]</p>
                             <a href="@Url.Action("Index", "Contacts")" class="btn btn-success">
-                                <i class="fas fa-users"></i> Contacts
+                                <i class="fas fa-users"></i> @Localizer["Contacts"]
                             </a>
                         </div>
                     </div>
@@ -51,10 +54,10 @@
                     <div class="card h-100 text-center border-warning">
                         <div class="card-body">
                             <i class="fas fa-envelope fa-3x text-warning mb-3"></i>
-                            <h5 class="card-title">Send Invitations</h5>
-                            <p class="card-text">Generate QR codes and send via WhatsApp</p>
+                            <h5 class="card-title">@Localizer["SendInvitations"]</h5>
+                            <p class="card-text">@Localizer["GenerateQRCodesAndSend"]</p>
                             <a href="@Url.Action("Index", "Invitations")" class="btn btn-warning text-white">
-                                <i class="fas fa-envelope"></i> Invitations
+                                <i class="fas fa-envelope"></i> @Localizer["Invitations"]
                             </a>
                         </div>
                     </div>
@@ -64,10 +67,10 @@
                     <div class="card h-100 text-center border-info">
                         <div class="card-body">
                             <i class="fas fa-qrcode fa-3x text-info mb-3"></i>
-                            <h5 class="card-title">QR Scanner</h5>
-                            <p class="card-text">Fast parallel scanning for guest entry</p>
+                            <h5 class="card-title">@Localizer["QRScanner"]</h5>
+                            <p class="card-text">@Localizer["FastParallelScanning"]</p>
                             <a href="@Url.Action("Index", "QRScanner")" class="btn btn-info text-white">
-                                <i class="fas fa-qrcode"></i> Start Scanning
+                                <i class="fas fa-qrcode"></i> @Localizer["StartScanning"]
                             </a>
                         </div>
                     </div>
@@ -79,33 +82,33 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header bg-light">
-                            <h5><i class="fas fa-star"></i> Key Features</h5>
+                            <h5><i class="fas fa-star"></i> @Localizer["KeyFeatures"]</h5>
                         </div>
                         <div class="card-body">
                             <ul class="list-unstyled">
                                 <li class="mb-2">
                                     <i class="fas fa-check text-success"></i> 
-                                    Fast QR code generation and scanning
+                                    @Localizer["FastQRCodeGeneration"]
                                 </li>
                                 <li class="mb-2">
                                     <i class="fas fa-check text-success"></i> 
-                                    WhatsApp bulk messaging integration
+                                    @Localizer["WhatsAppBulkMessaging"]
                                 </li>
                                 <li class="mb-2">
                                     <i class="fas fa-check text-success"></i> 
-                                    Real-time guest entry tracking
+                                    @Localizer["RealTimeGuestTracking"]
                                 </li>
                                 <li class="mb-2">
                                     <i class="fas fa-check text-success"></i> 
-                                    Contact import from CSV/Excel
+                                    @Localizer["ExcelCSVImport"]
                                 </li>
                                 <li class="mb-2">
                                     <i class="fas fa-check text-success"></i> 
-                                    Invitation template customization
+                                    @Localizer["CustomInvitationTemplates"]
                                 </li>
                                 <li class="mb-2">
                                     <i class="fas fa-check text-success"></i> 
-                                    VIP guest management
+                                    @Localizer["MultiEventManagement"]
                                 </li>
                             </ul>
                         </div>
@@ -115,32 +118,32 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header bg-light">
-                            <h5><i class="fas fa-chart-bar"></i> Quick Stats</h5>
+                            <h5><i class="fas fa-chart-bar"></i> @Localizer["QuickStats"]</h5>
                         </div>
                         <div class="card-body">
                             <div class="row text-center">
                                 <div class="col-6">
                                     <div class="bg-primary text-white p-3 rounded mb-2">
                                         <h4>0</h4>
-                                        <small>Total Events</small>
+                                        <small>@Localizer["TotalEvents"]</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="bg-success text-white p-3 rounded mb-2">
                                         <h4>0</h4>
-                                        <small>Total Contacts</small>
+                                        <small>@Localizer["TotalContacts"]</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="bg-warning text-white p-3 rounded">
                                         <h4>0</h4>
-                                        <small>Invitations Sent</small>
+                                        <small>@Localizer["InvitationsSent"]</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="bg-info text-white p-3 rounded">
                                         <h4>0</h4>
-                                        <small>QR Scans Today</small>
+                                        <small>@Localizer["QRScansToday"]</small>
                                     </div>
                                 </div>
                             </div>

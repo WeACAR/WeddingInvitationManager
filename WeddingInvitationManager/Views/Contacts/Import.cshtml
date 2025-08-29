@@ -1,0 +1,187 @@
+@model WeddingInvitationManager.Models.ViewModels.ContactImportViewModel
+
+@{
+    ViewData["Title"] = "Import Contacts";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Import Contacts</h1>
+        <p class="text-muted mb-0">Add contacts to @ViewBag.EventName</p>
+    </div>
+    <div>
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Event
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- File Upload Method -->
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-upload"></i> Upload File
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="ImportFile" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="EventId" />
+                    
+                    <div class="mb-3">
+                        <label asp-for="ContactsFile" class="form-label"></label>
+                        <input asp-for="ContactsFile" class="form-control" accept=".csv,.xlsx,.xls,.vcf" />
+                        <span asp-validation-for="ContactsFile" class="text-danger"></span>
+                        <div class="form-text">Supported formats: CSV, Excel (.xlsx, .xls), vCard (.vcf)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Format" class="form-label"></label>
+                        <select asp-for="Format" class="form-select" asp-items="Html.GetEnumSelectList<WeddingInvitationManager.Models.ViewModels.ContactFileFormat>()"></select>
+                        <span asp-validation-for="Format" class="text-danger"></span>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload"></i> Upload and Import
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <h6 class="text-muted">Need a template?</h6>
+                    <div class="btn-group" role="group">
+                        <a asp-action="Template" asp-route-format="csv" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-download"></i> CSV Template
+                        </a>
+                        <a asp-action="Template" asp-route-format="excel" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download"></i> Excel Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Manual Entry Method -->
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-keyboard"></i> Manual Entry
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="ImportManual" method="post" id="manualForm">
+                    <input type="hidden" asp-for="EventId" />
+                    
+                    <div id="contactRows">
+                        @for (int i = 0; i < Model.ManualContacts.Count; i++)
+                        {
+                            <div class="contact-row border rounded p-3 mb-3" data-index="@i">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Contact @(i + 1)</h6>
+                                    @if (i > 0)
+                                    {
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-contact">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    }
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input asp-for="ManualContacts[i].Name" class="form-control" placeholder="Full Name" />
+                                        <span asp-validation-for="ManualContacts[i].Name" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <input asp-for="ManualContacts[i].PhoneNumber" class="form-control" placeholder="Phone Number" />
+                                        <span asp-validation-for="ManualContacts[i].PhoneNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input asp-for="ManualContacts[i].Email" class="form-control" placeholder="Email (optional)" />
+                                        <span asp-validation-for="ManualContacts[i].Email" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <input asp-for="ManualContacts[i].Category" class="form-control" placeholder="Category" />
+                                        <span asp-validation-for="ManualContacts[i].Category" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <div class="form-check">
+                                            <input asp-for="ManualContacts[i].IsVip" class="form-check-input" />
+                                            <label asp-for="ManualContacts[i].IsVip" class="form-check-label">VIP</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-outline-primary" id="addContact">
+                            <i class="fas fa-plus"></i> Add Another Contact
+                        </button>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-save"></i> Save Contacts
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let contactIndex = @Model.ManualContacts.Count;
+        
+        $('#addContact').click(function() {
+            $.get('@Url.Action("AddRow")', function(data) {
+                let newRow = $(data).find('.contact-row').attr('data-index', contactIndex);
+                newRow.find('input').each(function() {
+                    let name = $(this).attr('name');
+                    if (name) {
+                        $(this).attr('name', name.replace(/\[\d+\]/, '[' + contactIndex + ']'));
+                        $(this).attr('id', $(this).attr('id').replace(/_\d+_/, '_' + contactIndex + '_'));
+                    }
+                });
+                newRow.find('label').each(function() {
+                    let forAttr = $(this).attr('for');
+                    if (forAttr) {
+                        $(this).attr('for', forAttr.replace(/_\d+_/, '_' + contactIndex + '_'));
+                    }
+                });
+                newRow.find('h6').text('Contact ' + (contactIndex + 1));
+                $('#contactRows').append(newRow);
+                contactIndex++;
+            });
+        });
+        
+        $(document).on('click', '.remove-contact', function() {
+            $(this).closest('.contact-row').remove();
+        });
+    </script>
+}

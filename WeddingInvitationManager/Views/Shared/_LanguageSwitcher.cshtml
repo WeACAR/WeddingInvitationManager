@@ -1,0 +1,55 @@
+@using WeddingInvitationManager.Services
+@inject LanguageService LanguageService
+
+@{
+    var currentLanguage = LanguageService.GetCurrentLanguage();
+    var supportedLanguages = LanguageService.GetSupportedLanguages();
+    var currentLangInfo = supportedLanguages.FirstOrDefault(l => l.Code == currentLanguage);
+}
+
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+        <span class="me-2">@currentLangInfo.Flag</span>
+        <span class="d-none d-md-inline">@currentLangInfo.NativeName</span>
+        <span class="d-md-none">@currentLangInfo.Code.ToUpper()</span>
+    </button>
+    <ul class="dropdown-menu">
+        @foreach (var lang in supportedLanguages)
+        {
+            <li>
+                <form method="post" asp-controller="Language" asp-action="SetLanguage" class="m-0">
+                    <input type="hidden" name="culture" value="@lang.Code" />
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                    <button type="submit" class="dropdown-item d-flex align-items-center @(currentLanguage == lang.Code ? "active" : "")">
+                        <span class="me-2">@lang.Flag</span>
+                        <div>
+                            <div class="fw-bold">@lang.NativeName</div>
+                            <small class="text-muted">@lang.Name</small>
+                        </div>
+                        @if (currentLanguage == lang.Code)
+                        {
+                            <i class="fas fa-check ms-auto text-success"></i>
+                        }
+                    </button>
+                </form>
+            </li>
+        }
+    </ul>
+</div>
+
+<style>
+    .dropdown-item.active {
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+        color: var(--bs-primary);
+    }
+    
+    .dropdown-item:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+    
+    @@media (max-width: 768px) {
+        .dropdown-menu {
+            min-width: 200px;
+        }
+    }
+</style>

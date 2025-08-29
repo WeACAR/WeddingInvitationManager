@@ -1,0 +1,72 @@
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<WeddingInvitationManager.Resources.SharedResource> Localizer
+@model IEnumerable<WeddingInvitationManager.Models.Event>
+
+@{
+    ViewData["Title"] = @Localizer["Events"];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> @Localizer["CreateNewEvent"]
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">@Localizer["NoEventsYet"]</h3>
+        <p class="text-muted">@Localizer["CreateFirstEventMessage"]</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> @Localizer["CreateYourFirstEvent"]
+        </a>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@Localizer["HostedBy"] @item.Host</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> @item.Date.ToString("MMM dd, yyyy")
+                            </small>
+                        </p>
+                        @if (!string.IsNullOrEmpty(item.Description))
+                        {
+                            <p class="card-text">@item.Description</p>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> @Localizer["Details"]
+                            </a>
+                            <a asp-action="Dashboard" asp-route-id="@item.Id" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-chart-bar"></i> @Localizer["Dashboard"]
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-edit"></i> @Localizer["Edit"]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

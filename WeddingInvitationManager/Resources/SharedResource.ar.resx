@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Home" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+  <data name="Events" xml:space="preserve">
+    <value>الفعاليات</value>
+  </data>
+  <data name="Contacts" xml:space="preserve">
+    <value>جهات الاتصال</value>
+  </data>
+  <data name="Invitations" xml:space="preserve">
+    <value>الدعوات</value>
+  </data>
+  <data name="QRScanner" xml:space="preserve">
+    <value>ماسح الكيو آر</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>تسجيل دخول</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>التسجيل</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>تسجيل خروج</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>إنشاء</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>التفاصيل</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="WeddingInvitationManager" xml:space="preserve">
+    <value>مدير دعوات الزفاف</value>
+  </data>
+  <data name="EventName" xml:space="preserve">
+    <value>اسم الفعالية</value>
+  </data>
+  <data name="EventDate" xml:space="preserve">
+    <value>تاريخ الفعالية</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>الموقع</value>
+  </data>
+  <data name="Host" xml:space="preserve">
+    <value>المضيف</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="GuestName" xml:space="preserve">
+    <value>اسم الضيف</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>الفئة</value>
+  </data>
+  <data name="IsVip" xml:space="preserve">
+    <value>ضيف مميز</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>مرحباً بك في مدير دعوات الزفاف</value>
+  </data>
+  <data name="ManageYourWeddingInvitations" xml:space="preserve">
+    <value>أدر دعوات زفافك بسهولة</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>اللغة</value>
+  </data>
+  <data name="ChangeLanguage" xml:space="preserve">
+    <value>تغيير اللغة</value>
+  </data>
+  <data name="FastQRScanningBulkOperations" xml:space="preserve">
+    <value>مسح سريع للكيو آر، عمليات مجمعة، وإدارة شاملة للضيوف في منصة واحدة</value>
+  </data>
+  <data name="CreateEvent" xml:space="preserve">
+    <value>إنشاء فعالية</value>
+  </data>
+  <data name="SetupNewWeddingEvent" xml:space="preserve">
+    <value>إعداد فعالية زفاف جديدة مع كافة التفاصيل</value>
+  </data>
+  <data name="NewEvent" xml:space="preserve">
+    <value>فعالية جديدة</value>
+  </data>
+  <data name="ManageContacts" xml:space="preserve">
+    <value>إدارة جهات الاتصال</value>
+  </data>
+  <data name="ImportAndOrganizeGuestList" xml:space="preserve">
+    <value>استيراد وتنظيم قائمة الضيوف</value>
+  </data>
+  <data name="SendInvitations" xml:space="preserve">
+    <value>إرسال الدعوات</value>
+  </data>
+  <data name="GenerateQRCodesAndSend" xml:space="preserve">
+    <value>إنشاء رموز الكيو آر والإرسال عبر الواتساب</value>
+  </data>
+  <data name="FastParallelScanning" xml:space="preserve">
+    <value>مسح متوازي سريع لدخول الضيوف</value>
+  </data>
+  <data name="StartScanning" xml:space="preserve">
+    <value>بدء المسح</value>
+  </data>
+  <data name="KeyFeatures" xml:space="preserve">
+    <value>الميزات الرئيسية</value>
+  </data>
+  <data name="FastQRCodeGeneration" xml:space="preserve">
+    <value>إنشاء ومسح سريع لرموز الكيو آر</value>
+  </data>
+  <data name="WhatsAppBulkMessaging" xml:space="preserve">
+    <value>تكامل الرسائل المجمعة للواتساب</value>
+  </data>
+  <data name="RealTimeGuestTracking" xml:space="preserve">
+    <value>تتبع دخول الضيوف في الوقت الفعلي</value>
+  </data>
+  <data name="ExcelCSVImport" xml:space="preserve">
+    <value>استيراد جهات الاتصال من Excel/CSV</value>
+  </data>
+  <data name="CustomInvitationTemplates" xml:space="preserve">
+    <value>قوالب دعوات مخصصة</value>
+  </data>
+  <data name="MultiEventManagement" xml:space="preserve">
+    <value>إدارة فعاليات متعددة</value>
+  </data>
+  <data name="RecentActivity" xml:space="preserve">
+    <value>النشاط الأخير</value>
+  </data>
+  <data name="UpcomingEvents" xml:space="preserve">
+    <value>الفعاليات القادمة</value>
+  </data>
+  <data name="NoUpcomingEvents" xml:space="preserve">
+    <value>لا توجد فعاليات قادمة مجدولة</value>
+  </data>
+  <data name="GetStarted" xml:space="preserve">
+    <value>ابدأ الآن</value>
+  </data>
+  <data name="StartByCreatingEvent" xml:space="preserve">
+    <value>ابدأ بإنشاء فعاليتك الأولى!</value>
+  </data>
+  <data name="QuickStats" xml:space="preserve">
+    <value>إحصائيات سريعة</value>
+  </data>
+  <data name="TotalEvents" xml:space="preserve">
+    <value>إجمالي الفعاليات</value>
+  </data>
+  <data name="TotalContacts" xml:space="preserve">
+    <value>إجمالي جهات الاتصال</value>
+  </data>
+  <data name="InvitationsSent" xml:space="preserve">
+    <value>الدعوات المرسلة</value>
+  </data>
+  <data name="QRScansToday" xml:space="preserve">
+    <value>مسح الكيو آر اليوم</value>
+  </data>
+  <data name="CreateNewEvent" xml:space="preserve">
+    <value>إنشاء فعالية جديدة</value>
+  </data>
+  <data name="NoEventsYet" xml:space="preserve">
+    <value>لا توجد فعاليات بعد</value>
+  </data>
+  <data name="CreateFirstEventMessage" xml:space="preserve">
+    <value>أنشئ فعاليتك الأولى لتبدأ في إدارة دعوات الزفاف.</value>
+  </data>
+  <data name="CreateYourFirstEvent" xml:space="preserve">
+    <value>أنشئ فعاليتك الأولى</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="Host" xml:space="preserve">
+    <value>المضيف</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>التفاصيل</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="HostedBy" xml:space="preserve">
+    <value>يستضيفه</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
+</root>

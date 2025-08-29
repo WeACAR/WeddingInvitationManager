@@ -1,0 +1,322 @@
+@model object
+
+@{
+    ViewData["Title"] = "Scan Statistics";
+    var eventEntity = ViewBag.Event as WeddingInvitationManager.Models.Event;
+    var recentScans = ViewBag.RecentScans as IEnumerable<WeddingInvitationManager.Models.QRScan>;
+    var stats = Model as dynamic;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Scan Statistics</h1>
+        <p class="text-muted mb-0">Real-time scanning data for @eventEntity.Name</p>
+    </div>
+    <div class="btn-group">
+        <a asp-action="Scanner" asp-route-eventId="@eventEntity.Id" class="btn btn-primary">
+            <i class="fas fa-qrcode"></i> Scanner
+        </a>
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@eventEntity.Id" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Event
+        </a>
+    </div>
+</div>
+
+<!-- Live Stats Cards -->
+<div class="row mb-4" id="statsCards">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <i class="fas fa-ticket-alt fa-2x mb-2"></i>
+                <h3 id="totalScans">@(stats?.TotalScans ?? 0)</h3>
+                <p class="mb-0">Total Scans</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3 id="validScans">@(stats?.ValidScans ?? 0)</h3>
+                <p class="mb-0">Valid</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h3 id="invalidScans">@(stats?.InvalidScans ?? 0)</h3>
+                <p class="mb-0">Invalid</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <i class="fas fa-star fa-2x mb-2"></i>
+                <h3 id="vipScans">@(stats?.VipScans ?? 0)</h3>
+                <p class="mb-0">VIP Guests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie"></i> Scan Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="scanResultsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line"></i> Scans Over Time
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="timelineChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Scans -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i> Recent Scans
+                </h5>
+                <div class="badge bg-primary" id="liveIndicator">
+                    <i class="fas fa-circle text-success"></i> Live
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="recentScansTable">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Guest</th>
+                                <th>Result</th>
+                                <th>Guard</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (recentScans != null)
+                            {
+                                @foreach (var scan in recentScans)
+                                {
+                                    <tr>
+                                        <td>@scan.ScannedAt.ToString("HH:mm:ss")</td>
+                                        <td>
+                                            @if (scan.Invitation?.Contact != null)
+                                            {
+                                                @scan.Invitation.Contact.Name
+                                                @if (scan.Invitation.Contact.IsVip)
+                                                {
+                                                    <span class="badge bg-warning ms-1">VIP</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Unknown</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @switch (scan.Result)
+                                            {
+                                                case WeddingInvitationManager.Models.ScanResult.Valid:
+                                                    <span class="badge bg-success">Valid</span>
+                                                    break;
+                                                case WeddingInvitationManager.Models.ScanResult.AlreadyUsed:
+                                                    <span class="badge bg-warning">Already Used</span>
+                                                    break;
+                                                case WeddingInvitationManager.Models.ScanResult.Expired:
+                                                    <span class="badge bg-danger">Expired</span>
+                                                    break;
+                                                case WeddingInvitationManager.Models.ScanResult.NotFound:
+                                                    <span class="badge bg-secondary">Not Found</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-dark">Unknown</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@scan.ScannedBy</td>
+                                        <td>@(scan.Invitation?.Contact?.Category ?? "-")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Scanner" asp-route-eventId="@eventEntity.Id" class="btn btn-primary">
+                        <i class="fas fa-qrcode"></i> Open Scanner
+                    </a>
+                    <a asp-action="Guard" asp-route-eventId="@eventEntity.Id" class="btn btn-outline-info" target="_blank">
+                        <i class="fas fa-shield-alt"></i> Guard Scanner
+                    </a>
+                    <hr>
+                    <a asp-controller="Events" asp-action="Dashboard" asp-route-id="@eventEntity.Id" class="btn btn-outline-success">
+                        <i class="fas fa-chart-bar"></i> Event Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Quick Info
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <strong id="successRate">0%</strong>
+                        <br><small class="text-muted">Success Rate</small>
+                    </div>
+                    <div class="col-6">
+                        <strong id="avgScansPerHour">0</strong>
+                        <br><small class="text-muted">Scans/Hour</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+    
+    <script>
+        // SignalR connection for live updates
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/qrScanHub")
+            .build();
+
+        connection.start().then(function () {
+            connection.invoke("JoinEventGroup", @eventEntity.Id);
+        });
+
+        // Listen for scan updates
+        connection.on("QRScanProcessed", function (eventId, scanData) {
+            if (eventId === @eventEntity.Id) {
+                addNewScanToTable(scanData);
+                updateLiveStats();
+            }
+        });
+
+        // Listen for stats updates
+        connection.on("StatsUpdated", function (eventId, stats) {
+            if (eventId === @eventEntity.Id) {
+                updateStatsCards(stats);
+            }
+        });
+
+        function addNewScanToTable(scanData) {
+            const tbody = document.querySelector('#recentScansTable tbody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'table-warning'; // Highlight new rows
+            
+            const resultBadge = getResultBadge(scanData.Result);
+            const vipBadge = scanData.IsVip ? '<span class="badge bg-warning ms-1">VIP</span>' : '';
+            
+            newRow.innerHTML = `
+                <td>${new Date().toLocaleTimeString()}</td>
+                <td>${scanData.GuestName || 'Unknown'}${vipBadge}</td>
+                <td>${resultBadge}</td>
+                <td>${scanData.GuardName}</td>
+                <td>${scanData.Category || '-'}</td>
+            `;
+            
+            tbody.insertBefore(newRow, tbody.firstChild);
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                newRow.classList.remove('table-warning');
+            }, 3000);
+            
+            // Keep only last 20 rows
+            while (tbody.children.length > 20) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        }
+
+        function getResultBadge(result) {
+            switch (result) {
+                case 'Valid': return '<span class="badge bg-success">Valid</span>';
+                case 'AlreadyUsed': return '<span class="badge bg-warning">Already Used</span>';
+                case 'Expired': return '<span class="badge bg-danger">Expired</span>';
+                case 'NotFound': return '<span class="badge bg-secondary">Not Found</span>';
+                default: return '<span class="badge bg-dark">Unknown</span>';
+            }
+        }
+
+        function updateStatsCards(stats) {
+            document.getElementById('totalScans').textContent = stats.totalScans || 0;
+            document.getElementById('validScans').textContent = stats.validScans || 0;
+            document.getElementById('invalidScans').textContent = stats.invalidScans || 0;
+            document.getElementById('vipScans').textContent = stats.vipScans || 0;
+            
+            // Update success rate
+            const successRate = stats.totalScans > 0 ? Math.round((stats.validScans / stats.totalScans) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        function updateLiveStats() {
+            fetch(`@Url.Action("GetStats")?eventId=@eventEntity.Id`)
+                .then(response => response.json())
+                .then(stats => updateStatsCards(stats))
+                .catch(error => console.error('Error updating stats:', error));
+        }
+
+        // Initialize charts
+        const pieCtx = document.getElementById('scanResultsChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Valid', 'Already Used', 'Expired', 'Not Found'],
+                datasets: [{
+                    data: [@(stats?.ValidScans ?? 0), @(stats?.AlreadyUsedScans ?? 0), @(stats?.ExpiredScans ?? 0), @(stats?.NotFoundScans ?? 0)],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Update charts periodically
+        setInterval(updateLiveStats, 30000); // Every 30 seconds
+    </script>
+}
