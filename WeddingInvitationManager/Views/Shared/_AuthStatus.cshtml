@@ -1,0 +1,105 @@
+@using Microsoft.AspNetCore.Identity
+@using WeddingInvitationManager.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    if (user != null)
+    {
+        var roles = await UserManager.GetRolesAsync(user);
+        var roleClass = roles.Contains(RoleConstants.Admin) ? "admin" : 
+                       roles.Contains(RoleConstants.Sender) ? "sender" : 
+                       roles.Contains(RoleConstants.Guard) ? "guard" : "user";
+        
+        <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                <span class="status-indicator status-@roleClass me-2"></span>
+                <span class="me-2">@(user.FullName ?? User.Identity?.Name)</span>
+                @if (roles.Any())
+                {
+                    <span class="badge bg-@(roleClass == "admin" ? "danger" : roleClass == "sender" ? "primary" : "secondary") me-2">
+                        @string.Join(", ", roles)
+                    </span>
+                }
+                <span class="badge bg-success">Online</span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><h6 class="dropdown-header">Account</h6></li>
+                <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                    <i class="fas fa-user-cog"></i> Manage Account
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Access Level</h6></li>
+                @foreach (var role in roles)
+                {
+                    <li><span class="dropdown-item-text">
+                        <i class="fas fa-@(role == RoleConstants.Admin ? "crown" : role == RoleConstants.Sender ? "paper-plane" : "shield-alt")"></i> 
+                        @role
+                    </span></li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")">
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    }
+}
+else
+{
+    <div class="nav-item d-flex align-items-center">
+        <span class="status-indicator status-offline me-2"></span>
+        <span class="text-muted me-3">Not Logged In</span>
+        <a class="btn btn-outline-primary btn-sm me-2" asp-area="Identity" asp-page="/Account/Login">
+            <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+        <a class="btn btn-primary btn-sm" asp-area="Identity" asp-page="/Account/Register">
+            <i class="fas fa-user-plus"></i> Register
+        </a>
+    </div>
+}
+
+<style>
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .status-admin {
+        background-color: #dc3545;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3);
+    }
+    
+    .status-sender {
+        background-color: #0d6efd;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.3);
+    }
+    
+    .status-guard {
+        background-color: #6c757d;
+        box-shadow: 0 0 0 2px rgba(108, 117, 125, 0.3);
+    }
+    
+    .status-user {
+        background-color: #198754;
+        box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.3);
+    }
+    
+    .status-offline {
+        background-color: #6c757d;
+        opacity: 0.5;
+    }
+    
+    .dropdown-item-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+</style>
