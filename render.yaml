@@ -1,0 +1,64 @@
+# Render deployment configuration
+services:
+  - type: web
+    name: wedding-invitation-manager
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter # You can upgrade to standard or pro as needed
+    region: oregon # Choose your preferred region
+    branch: main
+    buildCommand: ""
+    startCommand: ""
+    healthCheckPath: /
+    
+    # Environment variables (set these in Render dashboard)
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:80
+      - key: AllowedHosts
+        value: "*"
+      - key: Logging__LogLevel__Default
+        value: Information
+      - key: Logging__LogLevel__Microsoft.AspNetCore
+        value: Warning
+      - key: FileUpload__MaxSizeBytes
+        value: "10485760"
+      - key: FileUpload__AllowedImageTypes__0
+        value: ".jpg"
+      - key: FileUpload__AllowedImageTypes__1
+        value: ".jpeg"
+      - key: FileUpload__AllowedImageTypes__2
+        value: ".png"
+      - key: FileUpload__AllowedImageTypes__3
+        value: ".gif"
+      - key: FileUpload__AllowedImageTypes__4
+        value: ".bmp"
+      - key: FileUpload__AllowedContactTypes__0
+        value: ".csv"
+      - key: FileUpload__AllowedContactTypes__1
+        value: ".xlsx"
+      - key: FileUpload__AllowedContactTypes__2
+        value: ".xls"
+      - key: FileUpload__AllowedContactTypes__3
+        value: ".vcf"
+      - key: WhatsApp__ApiUrl
+        value: "https://api.whatsapp.com/send"
+      
+      # SENSITIVE VARIABLES - Set these in Render Dashboard as secrets:
+      # - ConnectionStrings__DefaultConnection (your database connection string)
+      # - WhatsApp__ApiKey (your WhatsApp API key)  
+      # - WhatsApp__BusinessNumber (your business number)
+
+    # Automatic deploys on push to main branch
+    autoDeploy: true
+    
+    # Health check settings
+    healthCheckPath: /
+    
+    # Disk storage for uploads and generated files
+    disk:
+      name: wedding-files
+      mountPath: /app/wwwroot
+      sizeGB: 1

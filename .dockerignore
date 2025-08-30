@@ -1,0 +1,64 @@
+# .dockerignore - Exclude files not needed in Docker image
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+
+# IDE and editor files
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+
+# Environment files
+.env*
+*.env
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+temp/
+tmp/
+
+# Node modules (if any)
+node_modules/
+
+# User specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Database files (for development)
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated files that will be recreated
+wwwroot/generated/
+wwwroot/uploads/
+
+# Development scripts
+setup-environment.ps1
+ENVIRONMENT_VARIABLES.md
+SETUP_SUMMARY.md
+.env.template
