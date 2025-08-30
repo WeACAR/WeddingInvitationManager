@@ -159,3 +159,4 @@ C:\Users\yazeed\source\gitRepos\WeddingInvitationManager\WeddingInvitationManage
 C:\Users\yazeed\source\gitRepos\WeddingInvitationManager\WeddingInvitationManager\obj\Debug\net8.0\WeddingInvitationManager.pdb
 C:\Users\yazeed\source\gitRepos\WeddingInvitationManager\WeddingInvitationManager\obj\Debug\net8.0\WeddingInvitationManager.genruntimeconfig.cache
 C:\Users\yazeed\source\gitRepos\WeddingInvitationManager\WeddingInvitationManager\obj\Debug\net8.0\ref\WeddingInvitationManager.dll
+C:\Users\yazeed\source\gitRepos\WeddingInvitationManager\WeddingInvitationManager\bin\Debug\net8.0\appsettings.Production.json

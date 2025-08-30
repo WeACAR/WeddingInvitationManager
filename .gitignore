@@ -318,6 +318,11 @@ appsettings.*.json
 !appsettings.Development.json
 !appsettings.Production.json
 
+# Local development scripts with secrets
+run-local.ps1
+local-env.ps1
+dev-setup.ps1
+
 # User secrets
 secrets.json
 

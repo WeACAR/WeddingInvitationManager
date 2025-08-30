@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingInvitationManager")]
 [assembly: System.Reflection.AssemblyCopyrightAttribute(" ")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a773c4e25b8ecc8f91aa9ba31ecb74a23dd02c03")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+261e985e8d5af562ad31e06325243f8a592d2885")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingInvitationManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingInvitationManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,30 @@
+# Local Development Environment Setup Template
+# Copy this file to run-local.ps1 and update with your database connection string
+
+Write-Host "Setting up local development environment variables..." -ForegroundColor Green
+
+# Set environment variables for current session
+$env:ConnectionStrings__DefaultConnection = "YOUR_DATABASE_CONNECTION_STRING_HERE"
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+$env:Logging__LogLevel__Default = "Information"
+$env:Logging__LogLevel__Microsoft_AspNetCore = "Warning"
+$env:AllowedHosts = "*"
+$env:WhatsApp__ApiUrl = "https://api.whatsapp.com/send"
+$env:WhatsApp__ApiKey = ""
+$env:WhatsApp__BusinessNumber = ""
+$env:FileUpload__MaxSizeBytes = "10485760"
+$env:FileUpload__AllowedImageTypes__0 = ".jpg"
+$env:FileUpload__AllowedImageTypes__1 = ".jpeg"
+$env:FileUpload__AllowedImageTypes__2 = ".png"
+$env:FileUpload__AllowedImageTypes__3 = ".gif"
+$env:FileUpload__AllowedImageTypes__4 = ".bmp"
+$env:FileUpload__AllowedContactTypes__0 = ".csv"
+$env:FileUpload__AllowedContactTypes__1 = ".xlsx"
+$env:FileUpload__AllowedContactTypes__2 = ".xls"
+$env:FileUpload__AllowedContactTypes__3 = ".vcf"
+
+Write-Host "Environment variables set for current session!" -ForegroundColor Green
+Write-Host "You can now run: dotnet run" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "To verify environment variables are set:" -ForegroundColor Yellow
+Write-Host '$env:ConnectionStrings__DefaultConnection' -ForegroundColor White
