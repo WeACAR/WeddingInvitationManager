@@ -1,0 +1,61 @@
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<WeddingInvitationManager.Resources.SharedResource> Localizer
+@model IEnumerable<WeddingInvitationManager.Models.Event>
+
+@{
+    ViewData["Title"] = @Localizer["Invitations"];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">@Localizer["NoEventsYet"]</h3>
+        <p class="text-muted">@Localizer["CreateFirstEventMessage"]</p>
+        <a asp-controller="Events" asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> @Localizer["CreateYourFirstEvent"]
+        </a>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var eventItem in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@eventItem.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@Localizer["HostedBy"] @eventItem.Host</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> @eventItem.Date.ToString("MMM dd, yyyy")
+                            </small>
+                        </p>
+                        @if (!string.IsNullOrEmpty(eventItem.Description))
+                        {
+                            <p class="card-text">@eventItem.Description</p>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Templates" asp-route-eventId="@eventItem.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-images"></i> Templates
+                            </a>
+                            <a asp-action="Send" asp-route-eventId="@eventItem.Id" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </a>
+                            <a asp-action="Download" asp-route-eventId="@eventItem.Id" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

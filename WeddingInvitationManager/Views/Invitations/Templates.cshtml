@@ -13,6 +13,12 @@
         <a asp-action="CreateTemplate" asp-route-eventId="@Model.Id" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create Template
         </a>
+        <a asp-action="CreateTemplateEnhanced" asp-route-eventId="@Model.Id" class="btn btn-success">
+            <i class="fas fa-magic"></i> Enhanced Designer
+        </a>
+        <a asp-action="GenerateAdvanced" asp-route-eventId="@Model.Id" class="btn btn-info">
+            <i class="fas fa-rocket"></i> Generate Invitations
+        </a>
         <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Back to Event
         </a>

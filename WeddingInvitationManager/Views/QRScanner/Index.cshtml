@@ -1,7 +1,9 @@
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<WeddingInvitationManager.Resources.SharedResource> Localizer
 @model List<WeddingInvitationManager.Models.Event>
 
 @{
-    ViewData["Title"] = "QR Scanner - Select Event";
+    ViewData["Title"] = @Localizer["QRScanner"];
 }
 
 <div class="container">
@@ -9,8 +11,8 @@
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h3><i class="fas fa-qrcode"></i> QR Scanner - Select Event</h3>
-                    <p class="mb-0">Choose an event to start scanning QR codes</p>
+                    <h3><i class="fas fa-qrcode"></i> @Localizer["QRScannerSelectEvent"]</h3>
+                    <p class="mb-0">@Localizer["ChooseEventToScan"]</p>
                 </div>
                 <div class="card-body">
                     @if (Model.Any())
@@ -27,23 +29,23 @@
                                             <div class="card-text">
                                                 <p class="mb-2">
                                                     <i class="fas fa-calendar"></i> 
-                                                    <strong>Date:</strong> @evt.Date.ToString("MMMM dd, yyyy")
+                                                    <strong>@Localizer["Date"]:</strong> @evt.Date.ToString("MMMM dd, yyyy")
                                                 </p>
                                                 <p class="mb-2">
                                                     <i class="fas fa-clock"></i> 
-                                                    <strong>Time:</strong> @evt.Date.ToString("h:mm tt")
+                                                    <strong>@Localizer["Time"]:</strong> @evt.Date.ToString("h:mm tt")
                                                 </p>
                                                 <p class="mb-2">
                                                     <i class="fas fa-map-marker-alt"></i> 
-                                                    <strong>Location:</strong> @evt.LocationLink
+                                                    <strong>@Localizer["Location"]:</strong> @evt.LocationLink
                                                 </p>
                                                 <p class="mb-2">
                                                     <i class="fas fa-users"></i> 
-                                                    <strong>Invitations:</strong> @evt.Invitations.Count
+                                                    <strong>@Localizer["Invitations"]:</strong> @evt.Invitations.Count
                                                 </p>
                                                 <p class="mb-3">
                                                     <span class="badge @(evt.Date > DateTime.Now ? "bg-success" : "bg-secondary")">
-                                                        @(evt.Date > DateTime.Now ? "Active" : "Past Event")
+                                                        @(evt.Date > DateTime.Now ? @Localizer["Active"] : @Localizer["PastEvent"])
                                                     </span>
                                                 </p>
                                             </div>
@@ -51,7 +53,7 @@
                                         <div class="card-footer bg-light">
                                             @if (evt.Date > DateTime.Now.AddDays(-1)) // Allow scanning for past day
                                             {
-                                                <a href="@Url.Action("Scanner", new { id = evt.Id })" 
+                                                <a href="@Url.Action("Scanner", new { eventId = evt.Id })" 
                                                    class="btn btn-primary btn-block">
                                                     <i class="fas fa-qrcode"></i> Start Scanning
                                                 </a>

@@ -3,6 +3,8 @@ using CsvHelper.Configuration;
 using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using WeddingInvitationManager.Data;
 using WeddingInvitationManager.Models;
 using WeddingInvitationManager.Models.ViewModels;
@@ -138,38 +140,158 @@ public class ContactImportService : IContactImportService
 
     private async Task<List<Contact>> ImportFromVCardAsync(IFormFile file, int eventId)
     {
-        // Basic vCard parsing - you might want to use a dedicated library
         var contacts = new List<Contact>();
         
         using var reader = new StreamReader(file.OpenReadStream());
         var content = await reader.ReadToEndAsync();
         
-        var vCards = content.Split("BEGIN:VCARD", StringSplitOptions.RemoveEmptyEntries);
+        Console.WriteLine($"VCF Content length: {content.Length} characters");
+        Console.WriteLine($"VCF Content preview: {content.Substring(0, Math.Min(500, content.Length))}");
         
-        foreach (var vCard in vCards)
+        // Split by BEGIN:VCARD to get individual vCards
+        var vCardBlocks = content.Split(new[] { "BEGIN:VCARD" }, StringSplitOptions.RemoveEmptyEntries);
+        
+        Console.WriteLine($"Found {vCardBlocks.Length} vCard blocks");
+        
+        foreach (var vCardBlock in vCardBlocks)
         {
-            if (!vCard.Contains("END:VCARD")) continue;
+            if (string.IsNullOrWhiteSpace(vCardBlock) || !vCardBlock.Contains("END:VCARD")) 
+                continue;
             
-            var lines = vCard.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            Console.WriteLine($"Processing vCard block: {vCardBlock.Substring(0, Math.Min(200, vCardBlock.Length))}...");
+            
             var contact = new Contact { EventId = eventId };
+            var lines = vCardBlock.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             
             foreach (var line in lines)
             {
-                if (line.StartsWith("FN:"))
-                    contact.Name = line.Substring(3).Trim();
-                else if (line.StartsWith("TEL:"))
-                    contact.PhoneNumber = CleanPhoneNumber(line.Substring(4));
-                else if (line.StartsWith("EMAIL:"))
-                    contact.Email = line.Substring(6).Trim();
+                var cleanLine = line.Trim();
+                if (string.IsNullOrEmpty(cleanLine)) continue;
+                
+                try
+                {
+                    // Handle FN (Full Name)
+                    if (cleanLine.StartsWith("FN", StringComparison.OrdinalIgnoreCase))
+                    {
+                        contact.Name = ExtractVCardValue(cleanLine);
+                        Console.WriteLine($"Found name: {contact.Name}");
+                    }
+                    // Handle N (Name) if FN is not available
+                    else if (string.IsNullOrEmpty(contact.Name) && cleanLine.StartsWith("N", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var nameValue = ExtractVCardValue(cleanLine);
+                        var nameParts = nameValue.Split(';');
+                        var lastName = nameParts.Length > 0 ? nameParts[0].Trim() : "";
+                        var firstName = nameParts.Length > 1 ? nameParts[1].Trim() : "";
+                        contact.Name = $"{firstName} {lastName}".Trim();
+                        Console.WriteLine($"Found structured name: {contact.Name}");
+                    }
+                    // Handle TEL (Phone numbers) - support various formats
+                    else if (cleanLine.StartsWith("TEL", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var phoneValue = ExtractVCardValue(cleanLine);
+                        var cleanPhone = CleanPhoneNumber(phoneValue);
+                        if (!string.IsNullOrEmpty(cleanPhone) && string.IsNullOrEmpty(contact.PhoneNumber))
+                        {
+                            contact.PhoneNumber = cleanPhone;
+                            Console.WriteLine($"Found phone: {contact.PhoneNumber}");
+                        }
+                    }
+                    // Handle EMAIL
+                    else if (cleanLine.StartsWith("EMAIL", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var emailValue = ExtractVCardValue(cleanLine);
+                        if (!string.IsNullOrEmpty(emailValue) && string.IsNullOrEmpty(contact.Email))
+                        {
+                            contact.Email = emailValue;
+                            Console.WriteLine($"Found email: {contact.Email}");
+                        }
+                    }
+                    // Handle ORG (Organization) as category
+                    else if (cleanLine.StartsWith("ORG:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        contact.Category = ExtractVCardValue(cleanLine);
+                        Console.WriteLine($"Found organization: {contact.Category}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Continue processing other lines if one fails
+                    Console.WriteLine($"Error parsing vCard line '{cleanLine}': {ex.Message}");
+                }
             }
             
+            // Only add contact if it has required fields
             if (!string.IsNullOrEmpty(contact.Name) && !string.IsNullOrEmpty(contact.PhoneNumber))
             {
                 contacts.Add(contact);
+                Console.WriteLine($"Added contact: {contact.Name} - {contact.PhoneNumber}");
+            }
+            else
+            {
+                Console.WriteLine($"Skipped contact - Name: '{contact.Name}', Phone: '{contact.PhoneNumber}'");
             }
         }
 
+        Console.WriteLine($"Total contacts parsed: {contacts.Count}");
         return contacts;
+    }
+
+    private string DecodeQuotedPrintable(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        try
+        {
+            // Handle quoted-printable encoding (=XX format)
+            var bytes = new List<byte>();
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] == '=' && i + 2 < input.Length)
+                {
+                    var hex = input.Substring(i + 1, 2);
+                    if (byte.TryParse(hex, NumberStyles.HexNumber, null, out byte b))
+                    {
+                        bytes.Add(b);
+                        i += 2; // Skip the next 2 characters
+                    }
+                    else
+                    {
+                        bytes.Add((byte)input[i]);
+                    }
+                }
+                else
+                {
+                    bytes.Add((byte)input[i]);
+                }
+            }
+            
+            // Convert bytes to UTF-8 string
+            return Encoding.UTF8.GetString(bytes.ToArray());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error decoding quoted-printable: {ex.Message}");
+            return input; // Return original if decoding fails
+        }
+    }
+
+    private string ExtractVCardValue(string line)
+    {
+        if (string.IsNullOrEmpty(line) || !line.Contains(':'))
+            return "";
+
+        var colonIndex = line.IndexOf(':');
+        var value = line.Substring(colonIndex + 1).Trim();
+
+        // Check if the line contains encoding information
+        if (line.ToUpperInvariant().Contains("ENCODING=QUOTED-PRINTABLE"))
+        {
+            value = DecodeQuotedPrintable(value);
+        }
+
+        return value;
     }
 
     public async Task<List<Contact>> ImportFromManualEntryAsync(List<ContactRowViewModel> contacts, int eventId)

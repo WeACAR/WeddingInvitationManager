@@ -60,7 +60,8 @@ public class QRScannerController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> ProcessScan([FromBody] QRScanRequest request)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ProcessScan([FromBody] ProcessScanRequest request)
     {
         try
         {
@@ -147,38 +148,6 @@ public class QRScannerController : Controller
         }
     }
 
-    // High-performance scan processing endpoint
-    [HttpPost]
-    public async Task<IActionResult> ProcessScan([FromBody] ProcessScanRequest request)
-    {
-        try
-        {
-            var result = await _highPerfScanService.ProcessScanAsync(
-                request.QRCode, 
-                request.GuardName, 
-                request.EventId);
-
-            // Broadcast to SignalR clients for real-time updates
-            await _hubContext.Clients.Group($"Event_{request.EventId}")
-                .SendAsync("ScanResult", new
-                {
-                    QRCode = request.QRCode,
-                    GuestName = result.GuestName,
-                    Result = result.Result.ToString(),
-                    IsVip = result.IsVip,
-                    Category = result.Category,
-                    ScannedAt = result.ScannedAt,
-                    GuardName = request.GuardName
-                });
-
-            return Json(new { success = true, data = result });
-        }
-        catch (Exception ex)
-        {
-            return Json(new { success = false, message = ex.Message });
-        }
-    }
-
     // Get event statistics
     [HttpGet]
     public async Task<IActionResult> GetEventStats(int eventId)
@@ -215,11 +184,4 @@ public class QRScannerController : Controller
 
         return View("GuardScanner", model);
     }
-}
-
-public class QRScanRequest
-{
-    public string QRCode { get; set; } = string.Empty;
-    public string GuardName { get; set; } = string.Empty;
-    public int EventId { get; set; }
 }

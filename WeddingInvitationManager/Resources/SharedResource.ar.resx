@@ -207,4 +207,241 @@
   <data name="Dashboard" xml:space="preserve">
     <value>لوحة التحكم</value>
   </data>
+  <data name="Import" xml:space="preserve">
+    <value>استيراد</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>تصدير</value>
+  </data>
+  <data name="EditContact" xml:space="preserve">
+    <value>تعديل جهة اتصال</value>
+  </data>
+  <data name="BackToManage" xml:space="preserve">
+    <value>العودة لإدارة جهات الاتصال</value>
+  </data>
+  <data name="ContactInformation" xml:space="preserve">
+    <value>معلومات جهة الاتصال</value>
+  </data>
+  <data name="EnterContactName" xml:space="preserve">
+    <value>أدخل اسم جهة الاتصال</value>
+  </data>
+  <data name="EnterPhoneNumber" xml:space="preserve">
+    <value>أدخل رقم الهاتف</value>
+  </data>
+  <data name="EnterEmail" xml:space="preserve">
+    <value>أدخل عنوان البريد الإلكتروني</value>
+  </data>
+  <data name="EnterCategory" xml:space="preserve">
+    <value>أدخل الفئة (مثل: عائلة، أصدقاء، عمل)</value>
+  </data>
+  <data name="CategoryHint" xml:space="preserve">
+    <value>اختياري: تجميع جهات الاتصال حسب الفئة</value>
+  </data>
+  <data name="VIPContactHint" xml:space="preserve">
+    <value>جهات الاتصال المميزة تحصل على معاملة خاصة</value>
+  </data>
+  <data name="SaveChanges" xml:space="preserve">
+    <value>حفظ التغييرات</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>تغييرات غير محفوظة</value>
+  </data>
+  <data name="ValidationErrors" xml:space="preserve">
+    <value>يرجى إصلاح الأخطاء التالية:</value>
+  </data>
+  <data name="ToggleVIPStatus" xml:space="preserve">
+    <value>تبديل حالة VIP</value>
+  </data>
+  <data name="VIPStatusUpdated" xml:space="preserve">
+    <value>تم تحديث حالة VIP بنجاح</value>
+  </data>
+  <data name="ErrorUpdatingVIPStatus" xml:space="preserve">
+    <value>خطأ في تحديث حالة VIP</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>نجح</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>القوالب</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>إرسال</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>تحميل</value>
+  </data>
+  <data name="QRScannerSelectEvent" xml:space="preserve">
+    <value>ماسح الكيو آر - اختر الفعالية</value>
+  </data>
+  <data name="ChooseEventToScan" xml:space="preserve">
+    <value>اختر فعالية لبدء مسح رموز الكيو آر</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>الوقت</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>الموقع</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="PastEvent" xml:space="preserve">
+    <value>فعالية منتهية</value>
+  </data>
+  <data name="EventEnded" xml:space="preserve">
+    <value>انتهت الفعالية</value>
+  </data>
+  <data name="NoEventsFound" xml:space="preserve">
+    <value>لم يتم العثور على فعاليات</value>
+  </data>
+  <data name="NoEventsForScanning" xml:space="preserve">
+    <value>لا توجد فعاليات متاحة للمسح. يرجى إنشاء فعالية أولاً.</value>
+  </data>
+  <data name="ImportContacts" xml:space="preserve">
+    <value>استيراد جهات الاتصال</value>
+  </data>
+  <data name="AddContactsTo" xml:space="preserve">
+    <value>إضافة جهات الاتصال إلى</value>
+  </data>
+  <data name="BackToEvent" xml:space="preserve">
+    <value>العودة إلى الحدث</value>
+  </data>
+  <data name="UploadFile" xml:space="preserve">
+    <value>رفع ملف</value>
+  </data>
+  <data name="ManualEntry" xml:space="preserve">
+    <value>إدخال يدوي</value>
+  </data>
+  <data name="ContactsFile" xml:space="preserve">
+    <value>ملف جهات الاتصال</value>
+  </data>
+  <data name="SupportedFormats" xml:space="preserve">
+    <value>الصيغ المدعومة: CSV, Excel (.xlsx, .xls), vCard (.vcf)</value>
+  </data>
+  <data name="FileFormat" xml:space="preserve">
+    <value>صيغة الملف</value>
+  </data>
+  <data name="UploadAndImport" xml:space="preserve">
+    <value>رفع واستيراد</value>
+  </data>
+  <data name="NeedTemplate" xml:space="preserve">
+    <value>تحتاج إلى قالب؟</value>
+  </data>
+  <data name="CSVTemplate" xml:space="preserve">
+    <value>قالب CSV</value>
+  </data>
+  <data name="ExcelTemplate" xml:space="preserve">
+    <value>قالب Excel</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>جهة اتصال</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>الاسم الكامل</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>الفئة</value>
+  </data>
+  <data name="VIP" xml:space="preserve">
+    <value>شخصية مهمة</value>
+  </data>
+  <data name="AddAnotherContact" xml:space="preserve">
+    <value>إضافة جهة اتصال أخرى</value>
+  </data>
+  <data name="SaveContacts" xml:space="preserve">
+    <value>حفظ جهات الاتصال</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>اختياري</value>
+  </data>
+  <data name="ManageContacts" xml:space="preserve">
+    <value>إدارة جهات الاتصال</value>
+  </data>
+  <data name="ContactsTotal" xml:space="preserve">
+    <value>جهة اتصال إجمالي</value>
+  </data>
+  <data name="SearchContacts" xml:space="preserve">
+    <value>البحث في جهات الاتصال</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>تصفية</value>
+  </data>
+  <data name="AllContacts" xml:space="preserve">
+    <value>جميع جهات الاتصال</value>
+  </data>
+  <data name="VIPOnly" xml:space="preserve">
+    <value>الشخصيات المهمة فقط</value>
+  </data>
+  <data name="RegularOnly" xml:space="preserve">
+    <value>العادية فقط</value>
+  </data>
+  <data name="ExportCSV" xml:space="preserve">
+    <value>تصدير CSV</value>
+  </data>
+  <data name="ExportExcel" xml:space="preserve">
+    <value>تصدير Excel</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>تاريخ الإنشاء</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="NotProvided" xml:space="preserve">
+    <value>غير مقدم</value>
+  </data>
+  <data name="Attended" xml:space="preserve">
+    <value>حضر</value>
+  </data>
+  <data name="InvitationSent" xml:space="preserve">
+    <value>تم إرسال الدعوة</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>في الانتظار</value>
+  </data>
+  <data name="NoInvitation" xml:space="preserve">
+    <value>لا توجد دعوة</value>
+  </data>
+  <data name="TotalContacts" xml:space="preserve">
+    <value>إجمالي جهات الاتصال</value>
+  </data>
+  <data name="VIPContacts" xml:space="preserve">
+    <value>الشخصيات المهمة</value>
+  </data>
+  <data name="WithEmail" xml:space="preserve">
+    <value>مع البريد الإلكتروني</value>
+  </data>
+  <data name="InvitationsSent" xml:space="preserve">
+    <value>الدعوات المرسلة</value>
+  </data>
+  <data name="NoContactsFound" xml:space="preserve">
+    <value>لم يتم العثور على جهات اتصال</value>
+  </data>
+  <data name="GetStartedByImporting" xml:space="preserve">
+    <value>ابدأ باستيراد جهات الاتصال الأولى</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>تأكيد الحذف</value>
+  </data>
+  <data name="AreYouSureDelete" xml:space="preserve">
+    <value>هل أنت متأكد من حذف</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="EditFunctionality" xml:space="preserve">
+    <value>وظيفة التحرير قريباً!</value>
+  </data>
 </root>

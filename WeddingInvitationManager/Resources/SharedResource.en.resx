@@ -207,4 +207,244 @@
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="EditContact" xml:space="preserve">
+    <value>Edit Contact</value>
+  </data>
+  <data name="BackToManage" xml:space="preserve">
+    <value>Back to Manage</value>
+  </data>
+  <data name="ContactInformation" xml:space="preserve">
+    <value>Contact Information</value>
+  </data>
+  <data name="EnterContactName" xml:space="preserve">
+    <value>Enter contact name</value>
+  </data>
+  <data name="EnterPhoneNumber" xml:space="preserve">
+    <value>Enter phone number</value>
+  </data>
+  <data name="EnterEmail" xml:space="preserve">
+    <value>Enter email address</value>
+  </data>
+  <data name="EnterCategory" xml:space="preserve">
+    <value>Enter category (e.g., Family, Friends, Work)</value>
+  </data>
+  <data name="CategoryHint" xml:space="preserve">
+    <value>Optional: Group contacts by category</value>
+  </data>
+  <data name="VIPContactHint" xml:space="preserve">
+    <value>VIP contacts receive special treatment</value>
+  </data>
+  <data name="SaveChanges" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Unsaved Changes</value>
+  </data>
+  <data name="ValidationErrors" xml:space="preserve">
+    <value>Please fix the following errors:</value>
+  </data>
+  <data name="ToggleVIPStatus" xml:space="preserve">
+    <value>Toggle VIP Status</value>
+  </data>
+  <data name="VIPStatusUpdated" xml:space="preserve">
+    <value>VIP status updated successfully</value>
+  </data>
+  <data name="ErrorUpdatingVIPStatus" xml:space="preserve">
+    <value>Error updating VIP status</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>Templates</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="QRScannerSelectEvent" xml:space="preserve">
+    <value>QR Scanner - Select Event</value>
+  </data>
+  <data name="ChooseEventToScan" xml:space="preserve">
+    <value>Choose an event to start scanning QR codes</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="PastEvent" xml:space="preserve">
+    <value>Past Event</value>
+  </data>
+  <data name="EventEnded" xml:space="preserve">
+    <value>Event Ended</value>
+  </data>
+  <data name="NoEventsFound" xml:space="preserve">
+    <value>No Events Found</value>
+  </data>
+  <data name="NoEventsForScanning" xml:space="preserve">
+    <value>There are no events available for scanning. Please create an event first.</value>
+  </data>
+  <data name="CreateEvent" xml:space="preserve">
+    <value>Create Event</value>
+  </data>
+  <data name="ImportContacts" xml:space="preserve">
+    <value>Import Contacts</value>
+  </data>
+  <data name="AddContactsTo" xml:space="preserve">
+    <value>Add contacts to</value>
+  </data>
+  <data name="BackToEvent" xml:space="preserve">
+    <value>Back to Event</value>
+  </data>
+  <data name="UploadFile" xml:space="preserve">
+    <value>Upload File</value>
+  </data>
+  <data name="ManualEntry" xml:space="preserve">
+    <value>Manual Entry</value>
+  </data>
+  <data name="ContactsFile" xml:space="preserve">
+    <value>Contacts File</value>
+  </data>
+  <data name="SupportedFormats" xml:space="preserve">
+    <value>Supported formats: CSV, Excel (.xlsx, .xls), vCard (.vcf)</value>
+  </data>
+  <data name="FileFormat" xml:space="preserve">
+    <value>File Format</value>
+  </data>
+  <data name="UploadAndImport" xml:space="preserve">
+    <value>Upload and Import</value>
+  </data>
+  <data name="NeedTemplate" xml:space="preserve">
+    <value>Need a template?</value>
+  </data>
+  <data name="CSVTemplate" xml:space="preserve">
+    <value>CSV Template</value>
+  </data>
+  <data name="ExcelTemplate" xml:space="preserve">
+    <value>Excel Template</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Full Name</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="VIP" xml:space="preserve">
+    <value>VIP</value>
+  </data>
+  <data name="AddAnotherContact" xml:space="preserve">
+    <value>Add Another Contact</value>
+  </data>
+  <data name="SaveContacts" xml:space="preserve">
+    <value>Save Contacts</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>optional</value>
+  </data>
+  <data name="ManageContacts" xml:space="preserve">
+    <value>Manage Contacts</value>
+  </data>
+  <data name="ContactsTotal" xml:space="preserve">
+    <value>contacts total</value>
+  </data>
+  <data name="SearchContacts" xml:space="preserve">
+    <value>Search contacts</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="AllContacts" xml:space="preserve">
+    <value>All Contacts</value>
+  </data>
+  <data name="VIPOnly" xml:space="preserve">
+    <value>VIP Only</value>
+  </data>
+  <data name="RegularOnly" xml:space="preserve">
+    <value>Regular Only</value>
+  </data>
+  <data name="ExportCSV" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+  <data name="ExportExcel" xml:space="preserve">
+    <value>Export Excel</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Created At</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="NotProvided" xml:space="preserve">
+    <value>Not provided</value>
+  </data>
+  <data name="Attended" xml:space="preserve">
+    <value>Attended</value>
+  </data>
+  <data name="InvitationSent" xml:space="preserve">
+    <value>Invitation Sent</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="NoInvitation" xml:space="preserve">
+    <value>No Invitation</value>
+  </data>
+  <data name="TotalContacts" xml:space="preserve">
+    <value>Total Contacts</value>
+  </data>
+  <data name="VIPContacts" xml:space="preserve">
+    <value>VIP Contacts</value>
+  </data>
+  <data name="WithEmail" xml:space="preserve">
+    <value>With Email</value>
+  </data>
+  <data name="InvitationsSent" xml:space="preserve">
+    <value>Invitations Sent</value>
+  </data>
+  <data name="NoContactsFound" xml:space="preserve">
+    <value>No contacts found</value>
+  </data>
+  <data name="GetStartedByImporting" xml:space="preserve">
+    <value>Get started by importing your first contacts</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="AreYouSureDelete" xml:space="preserve">
+    <value>Are you sure you want to delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="EditFunctionality" xml:space="preserve">
+    <value>Edit functionality coming soon!</value>
+  </data>
 </root>

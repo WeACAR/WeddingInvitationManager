@@ -1,0 +1,463 @@
+@model WeddingInvitationManager.Models.Event
+
+@{
+    ViewData["Title"] = "Advanced Invitation Generation";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Advanced Invitation Generation</h1>
+        <p class="text-muted mb-0">Create invitations for @Model.Name with enhanced options</p>
+    </div>
+    <div class="btn-group">
+        <a asp-action="Templates" asp-route-eventId="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-images"></i> Manage Templates
+        </a>
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Event
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Templates.Any())
+{
+    <div class="alert alert-warning">
+        <h5><i class="fas fa-exclamation-triangle"></i> No Templates Found</h5>
+        <p class="mb-0">You need to create at least one template before generating invitations.</p>
+        <hr>
+        <a asp-action="CreateTemplate" asp-route-eventId="@Model.Id" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Template
+        </a>
+    </div>
+}
+else
+{
+    <div class="row">
+        <!-- General Invitation -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-globe"></i> General Invitation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Generate a single invitation with a QR code that takes users to a URL where they can enter their phone number to get their specific invitation.</p>
+                    
+                    <form id="generalForm">
+                        <input type="hidden" name="eventId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label for="generalTemplate" class="form-label">Select Template</label>
+                            <select name="templateId" id="generalTemplate" class="form-select" required>
+                                @foreach (var template in Model.Templates)
+                                {
+                                    <option value="@template.Id" selected="@(template.IsDefault ? "selected" : null)">
+                                        @template.Name
+                                        @if (template.IsDefault) { <text>(Default)</text> }
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="eventUrl" class="form-label">Event URL</label>
+                            <input type="url" name="eventUrl" id="eventUrl" class="form-control" 
+                                   value="@($"{Context.Request.Scheme}://{Context.Request.Host}/Events/PublicInvite/{Model.Id}")" readonly required />
+                            <div class="form-text">URL where guests can enter their details to get their invitation</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-magic"></i> Generate General Invitation
+                        </button>
+                    </form>
+                    
+                    <div id="generalResult" class="mt-3" style="display: none;">
+                        <div class="alert alert-success">
+                            <strong>Success!</strong> General invitation generated.
+                            <div class="mt-2">
+                                <a id="generalDownload" href="#" class="btn btn-sm btn-outline-success" download>
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <button id="generalPreview" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#previewModal">
+                                    <i class="fas fa-eye"></i> Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Individual Invitations -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> Individual Invitations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Generate separate invitation images for each guest. You can choose to download them or send them individually.</p>
+                    
+                    <form id="individualForm">
+                        <input type="hidden" name="eventId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label for="individualTemplate" class="form-label">Template Selection</label>
+                            <select name="templateId" id="individualTemplate" class="form-select">
+                                <option value="">Auto-select (Default for regular, VIP for VIP guests)</option>
+                                @foreach (var template in Model.Templates)
+                                {
+                                    <option value="@template.Id">
+                                        @template.Name
+                                        @if (template.IsDefault) { <text>(Default)</text> }
+                                        @if (template.IsVipTemplate) { <text>(VIP)</text> }
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <strong>@Model.Contacts.Count</strong>
+                                    <br><small class="text-muted">Total Contacts</small>
+                                </div>
+                                <div class="col-6">
+                                    <strong>@Model.Contacts.Count(c => c.IsVip)</strong>
+                                    <br><small class="text-muted">VIP Guests</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-cogs"></i> Generate Individual Invitations
+                        </button>
+                    </form>
+                    
+                    <div id="individualResult" class="mt-3" style="display: none;">
+                        <div class="alert alert-success">
+                            <strong>Success!</strong> <span id="individualCount">0</span> invitations generated.
+                            <div class="mt-2">
+                                <form id="downloadZipForm" asp-action="DownloadIndividualZip" method="post" style="display: inline;">
+                                    <input type="hidden" name="eventId" value="@Model.Id" />
+                                    <input type="hidden" id="zipTemplateId" name="templateId" value="" />
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-file-archive"></i> Download ZIP
+                                    </button>
+                                </form>
+                                <a asp-action="Send" asp-route-eventId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-paper-plane"></i> Send Invitations
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Generate & Send -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket"></i> Generate & Send
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Generate invitations and send them automatically via WhatsApp. This combines generation and sending in one step.</p>
+                    
+                    <form asp-action="SendBulk" method="post">
+                        <input type="hidden" name="eventId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label for="bulkTemplate" class="form-label">Template Selection</label>
+                            <select name="templateId" id="bulkTemplate" class="form-select">
+                                <option value="">Auto-select (Default for regular, VIP for VIP guests)</option>
+                                @foreach (var template in Model.Templates)
+                                {
+                                    <option value="@template.Id">
+                                        @template.Name
+                                        @if (template.IsDefault) { <text>(Default)</text> }
+                                        @if (template.IsVipTemplate) { <text>(VIP)</text> }
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <small>
+                                    <i class="fas fa-info-circle"></i>
+                                    This will generate invitations and send them immediately to all contacts.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-rocket"></i> Generate & Send All
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Preview Section -->
+    @if (Model.Templates.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-eye"></i> Template Previews with QR Codes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var template in Model.Templates)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">
+                                                @template.Name
+                                                @if (template.IsDefault)
+                                                {
+                                                    <span class="badge bg-primary">Default</span>
+                                                }
+                                                @if (template.IsVipTemplate)
+                                                {
+                                                    <span class="badge bg-warning">VIP</span>
+                                                }
+                                            </h6>
+                                            
+                                            <div id="template-preview-@template.Id" class="mb-3">
+                                                <img src="@template.ImagePath" alt="@template.Name" class="img-fluid" style="max-height: 200px;">
+                                            </div>
+                                            
+                                            <button class="btn btn-sm btn-outline-primary" onclick="generatePreview(@template.Id)">
+                                                <i class="fas fa-qrcode"></i> Show with QR Code
+                                            </button>
+                                            
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    QR Position: (@template.QRPositionX, @template.QRPositionY) | Size: @template.QRSize px
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Invitation Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" alt="Preview" class="img-fluid" style="max-height: 500px;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle general invitation generation
+        document.getElementById('generalForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            try {
+                const response = await fetch('@Url.Action("GenerateGeneral", "Invitations")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('generalResult').style.display = 'block';
+                    document.getElementById('generalDownload').href = result.imagePath;
+                    document.getElementById('generalPreview').onclick = () => showPreview(result.imagePath);
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error generating invitation: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Handle individual invitations generation
+        document.getElementById('individualForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            try {
+                const response = await fetch('@Url.Action("GenerateIndividual", "Invitations")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('individualResult').style.display = 'block';
+                    document.getElementById('individualCount').textContent = result.count;
+                    document.getElementById('zipTemplateId').value = formData.get('templateId') || '';
+                    
+                    // Store the generation state to enable ZIP download
+                    window.individualInvitationsGenerated = true;
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error generating invitations: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Handle ZIP download
+        document.getElementById('downloadZipForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check if individual invitations have been generated
+            if (!window.individualInvitationsGenerated) {
+                alert('Please generate individual invitations first before downloading ZIP.');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating ZIP...';
+            
+            // Create a form and submit it to trigger download
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("DownloadIndividualZip", "Invitations")';
+            
+            // Add CSRF token
+            const token = document.createElement('input');
+            token.type = 'hidden';
+            token.name = '__RequestVerificationToken';
+            token.value = this.querySelector('input[name="__RequestVerificationToken"]').value;
+            form.appendChild(token);
+            
+            // Add form data
+            for (let [key, value] of formData.entries()) {
+                if (key !== '__RequestVerificationToken') { // Skip duplicate token
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                }
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+            
+            // Reset button after a delay
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }, 3000);
+        });
+
+        // Generate template preview with QR code
+        async function generatePreview(templateId) {
+            try {
+                const response = await fetch(`@Url.Action("PreviewTemplate", "Invitations")?templateId=${templateId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const previewContainer = document.getElementById(`template-preview-${templateId}`);
+                    previewContainer.innerHTML = `<img src="${result.previewPath}" alt="Preview with QR" class="img-fluid" style="max-height: 200px;">`;
+                } else {
+                    alert('Error generating preview: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Show image in modal
+        function showPreview(imagePath) {
+            document.getElementById('previewImage').src = imagePath;
+        }
+
+        // Add CSRF token to all forms
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                if (!form.querySelector('input[name="__RequestVerificationToken"]')) {
+                    const token = document.createElement('input');
+                    token.type = 'hidden';
+                    token.name = '__RequestVerificationToken';
+                    token.value = '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)[1];
+                    form.appendChild(token);
+                }
+            });
+        });
+    </script>
+}

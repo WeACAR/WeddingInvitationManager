@@ -1,0 +1,79 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+N:Doe;John;;;
+TEL;TYPE=CELL:+1234567890
+EMAIL:john.doe@example.com
+ORG:Family
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Jane Smith
+N:Smith;Jane;;;
+TEL;TYPE=HOME:+1987654321
+EMAIL:jane.smith@example.com
+ORG:Friends
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Bob Johnson
+TEL:+1555123456
+EMAIL:bob@example.com
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Alice Wilson
+N:Wilson;Alice;;;
+TEL;TYPE=WORK:+1444555666
+ORG:Colleagues
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Mohammed Ahmed
+N:Ahmed;Mohammed;;;
+TEL:+966501234567
+EMAIL:m.ahmed@example.com
+ORG:Relatives
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Sarah Brown
+TEL;CELL:+1777888999
+EMAIL:sarah.brown@example.com
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:David Lee
+N:Lee;David;;;
+TEL:+44123456789
+EMAIL:david.lee@example.com
+ORG:Business
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Lisa Taylor
+TEL;TYPE=MOBILE:+1333444555
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Kevin Martinez
+N:Martinez;Kevin;;;
+TEL:+34987654321
+EMAIL:kevin.martinez@example.com
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Emma Davis
+TEL:+61123456789
+EMAIL:emma.davis@example.com
+ORG:University
+END:VCARD

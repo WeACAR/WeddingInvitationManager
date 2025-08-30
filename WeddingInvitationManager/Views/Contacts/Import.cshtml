@@ -1,17 +1,20 @@
 @model WeddingInvitationManager.Models.ViewModels.ContactImportViewModel
+@using Microsoft.Extensions.Localization
+@using WeddingInvitationManager.Resources
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Import Contacts";
+    ViewData["Title"] = Localizer["ImportContacts"];
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1>Import Contacts</h1>
-        <p class="text-muted mb-0">Add contacts to @ViewBag.EventName</p>
+        <h1>@Localizer["ImportContacts"]</h1>
+        <p class="text-muted mb-0">@Localizer["AddContactsTo"] @ViewBag.EventName</p>
     </div>
     <div>
         <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Event
+            <i class="fas fa-arrow-left"></i> @Localizer["BackToEvent"]
         </a>
     </div>
 </div>
@@ -38,7 +41,7 @@
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-file-upload"></i> Upload File
+                    <i class="fas fa-file-upload"></i> @Localizer["UploadFile"]
                 </h5>
             </div>
             <div class="card-body">
@@ -46,33 +49,33 @@
                     <input type="hidden" asp-for="EventId" />
                     
                     <div class="mb-3">
-                        <label asp-for="ContactsFile" class="form-label"></label>
+                        <label asp-for="ContactsFile" class="form-label">@Localizer["ContactsFile"]</label>
                         <input asp-for="ContactsFile" class="form-control" accept=".csv,.xlsx,.xls,.vcf" />
                         <span asp-validation-for="ContactsFile" class="text-danger"></span>
-                        <div class="form-text">Supported formats: CSV, Excel (.xlsx, .xls), vCard (.vcf)</div>
+                        <div class="form-text">@Localizer["SupportedFormats"]</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label asp-for="Format" class="form-label"></label>
+                        <label asp-for="Format" class="form-label">@Localizer["FileFormat"]</label>
                         <select asp-for="Format" class="form-select" asp-items="Html.GetEnumSelectList<WeddingInvitationManager.Models.ViewModels.ContactFileFormat>()"></select>
                         <span asp-validation-for="Format" class="text-danger"></span>
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-upload"></i> Upload and Import
+                        <i class="fas fa-upload"></i> @Localizer["UploadAndImport"]
                     </button>
                 </form>
                 
                 <hr>
                 
                 <div class="text-center">
-                    <h6 class="text-muted">Need a template?</h6>
+                    <h6 class="text-muted">@Localizer["NeedTemplate"]</h6>
                     <div class="btn-group" role="group">
                         <a asp-action="Template" asp-route-format="csv" class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-download"></i> CSV Template
+                            <i class="fas fa-download"></i> @Localizer["CSVTemplate"]
                         </a>
                         <a asp-action="Template" asp-route-format="excel" class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-download"></i> Excel Template
+                            <i class="fas fa-download"></i> @Localizer["ExcelTemplate"]
                         </a>
                     </div>
                 </div>
@@ -85,7 +88,7 @@
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-keyboard"></i> Manual Entry
+                    <i class="fas fa-keyboard"></i> @Localizer["ManualEntry"]
                 </h5>
             </div>
             <div class="card-body">
@@ -97,7 +100,7 @@
                         {
                             <div class="contact-row border rounded p-3 mb-3" data-index="@i">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Contact @(i + 1)</h6>
+                                    <h6 class="mb-0">@Localizer["Contact"] @(i + 1)</h6>
                                     @if (i > 0)
                                     {
                                         <button type="button" class="btn btn-outline-danger btn-sm remove-contact">
@@ -108,28 +111,28 @@
                                 
                                 <div class="row">
                                     <div class="col-md-6 mb-2">
-                                        <input asp-for="ManualContacts[i].Name" class="form-control" placeholder="Full Name" />
+                                        <input asp-for="ManualContacts[i].Name" class="form-control" placeholder="@Localizer["FullName"]" />
                                         <span asp-validation-for="ManualContacts[i].Name" class="text-danger"></span>
                                     </div>
                                     <div class="col-md-6 mb-2">
-                                        <input asp-for="ManualContacts[i].PhoneNumber" class="form-control" placeholder="Phone Number" />
+                                        <input asp-for="ManualContacts[i].PhoneNumber" class="form-control" placeholder="@Localizer["PhoneNumber"]" />
                                         <span asp-validation-for="ManualContacts[i].PhoneNumber" class="text-danger"></span>
                                     </div>
                                 </div>
                                 
                                 <div class="row">
                                     <div class="col-md-6 mb-2">
-                                        <input asp-for="ManualContacts[i].Email" class="form-control" placeholder="Email (optional)" />
+                                        <input asp-for="ManualContacts[i].Email" class="form-control" placeholder="@Localizer["Email"] (@Localizer["Optional"])" />
                                         <span asp-validation-for="ManualContacts[i].Email" class="text-danger"></span>
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                        <input asp-for="ManualContacts[i].Category" class="form-control" placeholder="Category" />
+                                        <input asp-for="ManualContacts[i].Category" class="form-control" placeholder="@Localizer["Category"]" />
                                         <span asp-validation-for="ManualContacts[i].Category" class="text-danger"></span>
                                     </div>
                                     <div class="col-md-2 mb-2">
                                         <div class="form-check">
                                             <input asp-for="ManualContacts[i].IsVip" class="form-check-input" />
-                                            <label asp-for="ManualContacts[i].IsVip" class="form-check-label">VIP</label>
+                                            <label asp-for="ManualContacts[i].IsVip" class="form-check-label">@Localizer["VIP"]</label>
                                         </div>
                                     </div>
                                 </div>
@@ -139,12 +142,12 @@
                     
                     <div class="text-center mb-3">
                         <button type="button" class="btn btn-outline-primary" id="addContact">
-                            <i class="fas fa-plus"></i> Add Another Contact
+                            <i class="fas fa-plus"></i> @Localizer["AddAnotherContact"]
                         </button>
                     </div>
                     
                     <button type="submit" class="btn btn-success w-100">
-                        <i class="fas fa-save"></i> Save Contacts
+                        <i class="fas fa-save"></i> @Localizer["SaveContacts"]
                     </button>
                 </form>
             </div>

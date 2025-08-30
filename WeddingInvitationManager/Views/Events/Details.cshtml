@@ -110,10 +110,16 @@
                     <a asp-controller="Contacts" asp-action="Index" asp-route-eventId="@Model.Id" class="btn btn-outline-primary">
                         <i class="fas fa-users"></i> Manage Contacts
                     </a>
-                    <a asp-controller="Invitations" asp-action="Index" asp-route-eventId="@Model.Id" class="btn btn-outline-success">
-                        <i class="fas fa-envelope"></i> Manage Invitations
+                    <a asp-controller="Invitations" asp-action="Templates" asp-route-eventId="@Model.Id" class="btn btn-outline-warning">
+                        <i class="fas fa-images"></i> Invitation Templates
                     </a>
-                    <a asp-controller="QRScanner" asp-action="Scanner" asp-route-eventId="@Model.Id" class="btn btn-outline-info">
+                    <a asp-controller="Invitations" asp-action="GenerateAdvanced" asp-route-eventId="@Model.Id" class="btn btn-outline-info">
+                        <i class="fas fa-magic"></i> Generate Invitations
+                    </a>
+                    <a asp-controller="Invitations" asp-action="Send" asp-route-eventId="@Model.Id" class="btn btn-outline-success">
+                        <i class="fas fa-paper-plane"></i> Send Invitations
+                    </a>
+                    <a asp-controller="QRScanner" asp-action="Scanner" asp-route-eventId="@Model.Id" class="btn btn-outline-secondary">
                         <i class="fas fa-qrcode"></i> QR Scanner
                     </a>
                     <hr>

@@ -34,6 +34,17 @@ public class InvitationsController : Controller
         _hubContext = hubContext;
     }
 
+    public async Task<IActionResult> Index()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var events = await _context.Events
+            .Where(e => e.UserId == userId)
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        return View(events);
+    }
+
     public async Task<IActionResult> Templates(int eventId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -48,6 +59,20 @@ public class InvitationsController : Controller
     }
 
     public async Task<IActionResult> CreateTemplate(int eventId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var eventEntity = await _context.Events
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
+
+        if (eventEntity == null)
+            return NotFound();
+
+        ViewBag.EventId = eventId;
+        ViewBag.EventName = eventEntity.Name;
+        return View();
+    }
+
+    public async Task<IActionResult> CreateTemplateEnhanced(int eventId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var eventEntity = await _context.Events
@@ -144,6 +169,21 @@ public class InvitationsController : Controller
 
         var stats = await _whatsAppService.GetSendStatsAsync(eventId);
         ViewBag.Stats = stats;
+
+        return View(eventEntity);
+    }
+
+    public async Task<IActionResult> GenerateAdvanced(int eventId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var eventEntity = await _context.Events
+            .Include(e => e.Contacts)
+            .Include(e => e.Templates)
+            .Include(e => e.Invitations)
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
+
+        if (eventEntity == null)
+            return NotFound();
 
         return View(eventEntity);
     }
@@ -323,6 +363,148 @@ public class InvitationsController : Controller
         catch (Exception ex)
         {
             return Json(new { error = ex.Message });
+        }
+    }
+
+    // New methods for enhanced invitation generation
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateGeneral(int eventId, int templateId, string eventUrl)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var eventEntity = await _context.Events
+                .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
+            
+            if (eventEntity == null)
+                return NotFound();
+
+            var template = await _context.InvitationTemplates
+                .FirstOrDefaultAsync(t => t.Id == templateId && t.EventId == eventId);
+            
+            if (template == null)
+                return BadRequest("Template not found");
+
+            var imagePath = await _qrCodeService.CreateGeneralInvitationAsync(
+                template.ImagePath, 
+                eventUrl, 
+                template.QRPositionX, 
+                template.QRPositionY, 
+                template.QRSize);
+
+            return Json(new { success = true, imagePath });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateIndividual(int eventId, int? templateId = null)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var eventEntity = await _context.Events
+                .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
+            
+            if (eventEntity == null)
+                return NotFound();
+
+            var imagePaths = await _qrCodeService.CreateIndividualInvitationsAsync(eventId, templateId);
+            
+            return Json(new { success = true, count = imagePaths.Count, imagePaths });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> PreviewTemplate(int templateId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var template = await _context.InvitationTemplates
+                .Include(t => t.Event)
+                .FirstOrDefaultAsync(t => t.Id == templateId && t.Event.UserId == userId);
+            
+            if (template == null)
+                return NotFound();
+
+            var previewPath = await _qrCodeService.CreatePreviewWithSampleQRAsync(
+                template.ImagePath, 
+                template.QRPositionX, 
+                template.QRPositionY, 
+                template.QRSize);
+
+            return Json(new { success = true, previewPath });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DownloadIndividualZip(int eventId, int? templateId = null)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var eventEntity = await _context.Events
+                .Include(e => e.Contacts)
+                .Include(e => e.Templates)
+                .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
+            
+            if (eventEntity == null)
+                return NotFound("Event not found or you don't have access to it.");
+
+            Console.WriteLine($"Event found: {eventEntity.Name}, Contacts count: {eventEntity.Contacts.Count}, Templates count: {eventEntity.Templates.Count}");
+
+            if (!eventEntity.Contacts.Any())
+            {
+                TempData["Error"] = "No contacts found for this event. Please add contacts first.";
+                return RedirectToAction(nameof(GenerateAdvanced), new { eventId });
+            }
+
+            if (!eventEntity.Templates.Any())
+            {
+                TempData["Error"] = "No templates found for this event. Please create a template first.";
+                return RedirectToAction(nameof(GenerateAdvanced), new { eventId });
+            }
+
+            // Get existing invitations or create new ones if they don't exist
+            var imagePaths = await _qrCodeService.CreateIndividualInvitationsAsync(eventId, templateId);
+            
+            Console.WriteLine($"Image paths generated: {imagePaths?.Count ?? 0}");
+            
+            if (imagePaths == null || !imagePaths.Any())
+            {
+                TempData["Error"] = "No invitation images were generated. Please check that contacts and templates exist.";
+                return RedirectToAction(nameof(GenerateAdvanced), new { eventId });
+            }
+
+            var zipBytes = await _qrCodeService.CreateInvitationZipAsync(imagePaths, eventEntity.Name);
+            
+            var fileName = $"{eventEntity.Name}_Individual_Invitations_{DateTime.UtcNow:yyyyMMdd}.zip";
+            return File(zipBytes, "application/zip", fileName);
+        }
+        catch (Exception ex)
+        {
+            // Log the error for debugging
+            Console.WriteLine($"Error in DownloadIndividualZip: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            
+            TempData["Error"] = $"Error creating invitation package: {ex.Message}";
+            return RedirectToAction(nameof(GenerateAdvanced), new { eventId });
         }
     }
 }

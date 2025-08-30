@@ -22,8 +22,20 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Contacts/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udGFjdHNcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Contacts/Import.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udGFjdHNcSW1wb3J0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Contacts/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udGFjdHNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Contacts/Manage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udGFjdHNcTWFuYWdlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Events/Create.cshtml]
@@ -46,6 +58,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Events/PublicInvite.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRzXFB1YmxpY0ludml0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -56,6 +72,18 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Invitations/CreateTemplate.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW52aXRhdGlvbnNcQ3JlYXRlVGVtcGxhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Invitations/CreateTemplateEnhanced.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW52aXRhdGlvbnNcQ3JlYXRlVGVtcGxhdGVFbmhhbmNlZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Invitations/GenerateAdvanced.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW52aXRhdGlvbnNcR2VuZXJhdGVBZHZhbmNlZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Invitations/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW52aXRhdGlvbnNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/yazeed/source/gitRepos/WeddingInvitationManager/WeddingInvitationManager/Views/Invitations/Send.cshtml]

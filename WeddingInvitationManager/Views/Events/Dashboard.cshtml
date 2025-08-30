@@ -1,4 +1,7 @@
 @model WeddingInvitationManager.Models.Event
+@using Microsoft.Extensions.Localization
+@using WeddingInvitationManager.Resources
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
     ViewData["Title"] = $"{Model.Name} - Dashboard";
@@ -139,15 +142,15 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3">
-                        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@Model.Id" class="btn btn-outline-primary w-100 mb-2">
+                        <a asp-controller="Contacts" asp-action="Manage" asp-route-eventId="@Model.Id" class="btn btn-outline-primary w-100 mb-2">
                             <i class="fas fa-users"></i><br>
-                            Manage Contacts
+                            @Localizer["ManageContacts"]
                         </a>
                     </div>
                     <div class="col-md-3">
                         <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@Model.Id" class="btn btn-outline-success w-100 mb-2">
                             <i class="fas fa-file-import"></i><br>
-                            Import Contacts
+                            @Localizer["ImportContacts"]
                         </a>
                     </div>
                     <div class="col-md-3">

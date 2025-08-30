@@ -51,7 +51,7 @@
         <div class="card text-center bg-success text-white">
             <div class="card-body">
                 <i class="fas fa-paper-plane fa-2x mb-2"></i>
-                <h3>@(stats?.SentCount ?? 0)</h3>
+                <h3>@(stats?.SentInvitations ?? 0)</h3>
                 <p class="mb-0">Sent</p>
             </div>
         </div>
@@ -60,7 +60,7 @@
         <div class="card text-center bg-warning text-white">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x mb-2"></i>
-                <h3>@(stats?.PendingCount ?? Model.Contacts.Count)</h3>
+                <h3>@(stats?.PendingInvitations ?? Model.Contacts.Count)</h3>
                 <p class="mb-0">Pending</p>
             </div>
         </div>
@@ -69,7 +69,7 @@
         <div class="card text-center bg-danger text-white">
             <div class="card-body">
                 <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                <h3>@(stats?.FailedCount ?? 0)</h3>
+                <h3>@(stats?.TotalContacts - stats?.SentInvitations ?? 0)</h3>
                 <p class="mb-0">Failed</p>
             </div>
         </div>

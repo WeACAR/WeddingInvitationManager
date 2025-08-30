@@ -13,6 +13,7 @@
                     <small>Scan multiple QR codes quickly</small>
                 </div>
                 <div class="card-body">
+                    @Html.AntiForgeryToken()
                     <div id="video-container" class="position-relative mb-3">
                         <video id="qr-video" class="w-100" style="max-height: 400px;" playsinline></video>
                         <div class="scan-overlay"></div>
@@ -104,6 +105,60 @@
     </div>
 </div>
 
+<style>
+.scan-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+.scan-result {
+    padding: 8px;
+    margin: 4px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+}
+
+.scan-result.valid {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+}
+
+.scan-result.used {
+    background-color: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.scan-result.invalid {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+.stat-box {
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    transform: scale(1.05);
+}
+
+#video-container {
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#qr-video {
+    display: block;
+    border-radius: 8px;
+}
+</style>
+
 <script type="module">
 import QrScanner from 'https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js';
 
@@ -154,7 +209,7 @@ async function loadCameras() {
         cameras.forEach((camera, index) => {
             const option = document.createElement('option');
             option.value = camera.id;
-            option.textContent = camera.label || Camera ;
+            option.textContent = camera.label || `Camera ${index + 1}`;
             cameraSelect.appendChild(option);
         });
 
@@ -163,6 +218,7 @@ async function loadCameras() {
         }
     } catch (error) {
         console.error('Error loading cameras:', error);
+        alert('Camera access denied. Please allow camera access and refresh the page.');
     }
 }
 
@@ -191,7 +247,10 @@ function updateScanRate() {
     const now = Date.now();
     scanTimes = scanTimes.filter(time => now - time < 60000); // Keep only last minute
     const rate = scanTimes.length;
-    document.getElementById('scan-rate').textContent = ${rate}/min;
+    const scanRateElement = document.getElementById('scan-rate');
+    if (scanRateElement) {
+        scanRateElement.textContent = `${rate}/min`;
+    }
 }
 
 // Process QR scan
@@ -206,11 +265,13 @@ async function processQRScan(result) {
         scanStatus.textContent = 'Processing...';
         scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-warning text-dark';
 
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        
         const response = await fetch('/QRScanner/ProcessScan', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                'RequestVerificationToken': token
             },
             body: JSON.stringify({
                 QRCode: result.data,
@@ -243,28 +304,37 @@ function handleScanResult(result) {
         case 1: // Valid
             validCount++;
             statusClass = 'bg-success text-white';
-            statusText =  Valid - ;
+            statusText = `Valid - ${result.GuestName}`;
             soundFreq = 800; // High pitch for success
-            document.getElementById('valid-count').textContent = validCount;
+            const validCountElement = document.getElementById('valid-count');
+            if (validCountElement) {
+                validCountElement.textContent = validCount;
+            }
             break;
         case 2: // Already Used
             usedCount++;
             statusClass = 'bg-warning text-dark';
-            statusText =  Already Used - ;
+            statusText = `Already Used - ${result.GuestName}`;
             soundFreq = 400; // Medium pitch for warning
-            document.getElementById('used-count').textContent = usedCount;
+            const usedCountElement = document.getElementById('used-count');
+            if (usedCountElement) {
+                usedCountElement.textContent = usedCount;
+            }
             break;
         default: // Invalid/Expired/NotFound
             invalidCount++;
             statusClass = 'bg-danger text-white';
-            statusText =  ;
+            statusText = `${result.Message}`;
             soundFreq = 200; // Low pitch for error
-            document.getElementById('invalid-count').textContent = invalidCount;
+            const invalidCountElement = document.getElementById('invalid-count');
+            if (invalidCountElement) {
+                invalidCountElement.textContent = invalidCount;
+            }
             break;
     }
     
     scanStatus.textContent = statusText;
-    scanStatus.className = position-absolute top-0 start-0 m-2 px-3 py-1 rounded ;
+    scanStatus.className = `position-absolute top-0 start-0 m-2 px-3 py-1 rounded ${statusClass}`;
     
     playSound(soundFreq, 0.2);
     addToRecentScans(result);
@@ -281,7 +351,7 @@ function handleScanResult(result) {
 
 // Handle scan error
 function handleScanError(message) {
-    scanStatus.textContent = Error: ;
+    scanStatus.textContent = `Error: ${message}`;
     scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-danger text-white';
     playSound(150, 0.5); // Very low pitch for errors
 }
@@ -298,24 +368,26 @@ function addToRecentScans(result) {
         default: resultClass = 'invalid'; break;
     }
     
-    scanDiv.className = scan-result ;
-    scanDiv.innerHTML = 
+    scanDiv.className = `scan-result ${resultClass}`;
+    scanDiv.innerHTML = `
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <strong></strong>
-                
-                <br><small></small>
+                <strong>${result.GuestName || 'Unknown'}</strong>
+                ${result.Category ? `<span class="badge bg-secondary">${result.Category}</span>` : ''}
+                <br><small>${result.Message}</small>
             </div>
-            <small></small>
+            <small>${new Date().toLocaleTimeString()}</small>
         </div>
-    ;
+    `;
     
-    recentScans.insertBefore(scanDiv, recentScans.firstChild);
-    
-    // Keep only last 20 scans
-    const scans = recentScans.children;
-    if (scans.length > 20) {
-        recentScans.removeChild(scans[scans.length - 1]);
+    if (recentScans) {
+        recentScans.insertBefore(scanDiv, recentScans.firstChild);
+        
+        // Keep only last 20 scans
+        const scans = recentScans.children;
+        if (scans.length > 20) {
+            recentScans.removeChild(scans[scans.length - 1]);
+        }
     }
 }
 
@@ -335,6 +407,15 @@ async function startScanning() {
     }
 
     try {
+        // Check if we're on HTTPS or localhost (required for camera access)
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            alert('Camera access requires HTTPS. Please use HTTPS or localhost.');
+            return;
+        }
+
+        scanStatus.textContent = 'Starting camera...';
+        scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-info text-white';
+
         qrScanner = new QrScanner(
             video,
             processQRScan,
@@ -359,7 +440,22 @@ async function startScanning() {
         
     } catch (error) {
         console.error('Error starting scanner:', error);
-        alert('Failed to start camera: ' + error.message);
+        
+        let errorMessage = 'Failed to start camera: ';
+        if (error.name === 'NotAllowedError') {
+            errorMessage += 'Camera access denied. Please allow camera access and try again.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage += 'No camera found. Please connect a camera and try again.';
+        } else if (error.name === 'NotSupportedError') {
+            errorMessage += 'Camera not supported by this browser.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
+        
+        scanStatus.textContent = 'Camera error';
+        scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-danger text-white';
     }
 }
 
@@ -397,6 +493,16 @@ toggleSoundBtn.addEventListener('click', toggleSound);
 
 // Initialize
 window.addEventListener('load', async () => {
+    // Request camera permissions first
+    try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        console.log('Camera permission granted');
+    } catch (error) {
+        console.warn('Camera permission denied or not available:', error);
+        scanStatus.textContent = 'Camera permission required';
+        scanStatus.className = 'position-absolute top-0 start-0 m-2 px-3 py-1 rounded bg-warning text-dark';
+    }
+    
     await loadCameras();
     await initSignalR();
 });
@@ -413,5 +519,6 @@ window.addEventListener('beforeunload', () => {
 </script>
 
 @section Scripts {
-    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="https://unpkg.com/@@microsoft/signalr@@8.0.0/dist/browser/signalr.min.js"></script>
+    <script src="https://unpkg.com/qr-scanner@@1.4.2/qr-scanner.umd.min.js"></script>
 }

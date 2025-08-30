@@ -1,0 +1,491 @@
+@{
+    ViewData["Title"] = "Create Template - Enhanced";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Create Invitation Template - Enhanced</h1>
+        <p class="text-muted mb-0">Design a template for @ViewBag.EventName with draggable QR positioning</p>
+    </div>
+    <div>
+        <a asp-action="CreateTemplate" asp-route-eventId="@ViewBag.EventId" class="btn btn-outline-info">
+            <i class="fas fa-edit"></i> Classic Editor
+        </a>
+        <a asp-action="Templates" asp-route-eventId="@ViewBag.EventId" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Templates
+        </a>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-image"></i> Template Design Studio
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="templateForm" enctype="multipart/form-data">
+                    <input type="hidden" name="eventId" value="@ViewBag.EventId" />
+                    <input type="hidden" id="qrPositionX" name="qrPositionX" value="100" />
+                    <input type="hidden" id="qrPositionY" name="qrPositionY" value="100" />
+                    <input type="hidden" id="qrSize" name="qrSize" value="200" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="templateName" class="form-label">Template Name</label>
+                            <input type="text" name="templateName" id="templateName" class="form-control" 
+                                   placeholder="e.g., Gold Wedding Template" required />
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="imageFile" class="form-label">Background Image</label>
+                            <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" required />
+                            <div class="form-text">Recommended: 1080x1920px (Instagram Story size)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Preview Area -->
+                    <div class="mb-3">
+                        <label class="form-label">Template Preview</label>
+                        <div id="imagePreview" class="border border-2 border-dashed p-3 text-center" style="min-height: 400px; position: relative; background: #f8f9fa;">
+                            <div id="placeholderText" class="text-muted">
+                                <i class="fas fa-upload fa-3x mb-3"></i>
+                                <h5>Upload an image to start designing</h5>
+                                <p>Select a background image above to see the preview</p>
+                            </div>
+                            
+                            <!-- QR Code Placeholder (will be shown after image upload) -->
+                            <div id="qrPlaceholder" style="
+                                position: absolute; 
+                                top: 100px; 
+                                left: 100px; 
+                                width: 200px; 
+                                height: 200px; 
+                                background: rgba(0,0,0,0.8); 
+                                border: 2px dashed #fff; 
+                                cursor: move;
+                                display: none;
+                                z-index: 10;
+                                border-radius: 10px;
+                            ">
+                                <div style="
+                                    color: white; 
+                                    text-align: center; 
+                                    line-height: 200px; 
+                                    font-weight: bold;
+                                    font-size: 14px;
+                                ">
+                                    QR CODE<br><small style="font-size: 10px;">Drag to position</small>
+                                </div>
+                                
+                                <!-- Resize handles -->
+                                <div class="resize-handle" style="
+                                    position: absolute; 
+                                    bottom: -5px; 
+                                    right: -5px; 
+                                    width: 10px; 
+                                    height: 10px; 
+                                    background: #007bff; 
+                                    cursor: se-resize;
+                                    border-radius: 2px;
+                                "></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Position Controls -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">QR Position X</label>
+                            <input type="number" id="qrXInput" class="form-control" value="100" min="0" />
+                            <div class="form-text">Distance from left edge (pixels)</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">QR Position Y</label>
+                            <input type="number" id="qrYInput" class="form-control" value="100" min="0" />
+                            <div class="form-text">Distance from top edge (pixels)</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">QR Size</label>
+                            <input type="number" id="qrSizeInput" class="form-control" value="200" min="50" max="500" />
+                            <div class="form-text">Width and height (pixels)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Options -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="isDefault" id="isDefault" class="form-check-input" />
+                                <label for="isDefault" class="form-check-label">
+                                    <strong>Default Template</strong>
+                                    <br><small class="text-muted">Use this template for regular guests</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="isVipTemplate" id="isVipTemplate" class="form-check-input" />
+                                <label for="isVipTemplate" class="form-check-label">
+                                    <strong>VIP Template</strong>
+                                    <br><small class="text-muted">Special template for VIP guests</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Templates" asp-route-eventId="@ViewBag.EventId" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="button" id="previewBtn" class="btn btn-info" disabled>
+                            <i class="fas fa-eye"></i> Preview with Real QR
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Template
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb"></i> Design Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Use high-resolution images (1080x1920px or higher)
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Ensure good contrast for QR code visibility
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Test QR code size on different screen sizes
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Position QR code away from important text
+                    </li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Quick Position Presets</h6>
+                <div class="btn-group-vertical w-100" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQRPosition(50, 50)">
+                        <i class="fas fa-arrow-up"></i> Top Left
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQRPosition(400, 50)">
+                        <i class="fas fa-arrow-up"></i> Top Right
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQRPosition(300, 800)">
+                        <i class="fas fa-arrow-down"></i> Bottom Center
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQRPosition(50, 800)">
+                        <i class="fas fa-arrow-down"></i> Bottom Left
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <h6>Live Preview</h6>
+                <div id="miniPreview" class="text-center">
+                    <div style="width: 100px; height: 150px; background: #e9ecef; border: 1px solid #dee2e6; margin: 0 auto; position: relative;">
+                        <div id="miniQR" style="
+                            position: absolute; 
+                            width: 20px; 
+                            height: 20px; 
+                            background: #000; 
+                            left: 10px; 
+                            top: 10px;
+                        "></div>
+                    </div>
+                    <small class="text-muted">Mini preview</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Template Preview with QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="realPreviewImage" src="" alt="Preview" class="img-fluid" style="max-height: 500px;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let imageLoaded = false;
+        let isDragging = false;
+        let isResizing = false;
+        let dragOffset = { x: 0, y: 0 };
+        let previewContainer;
+        let qrPlaceholder;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            previewContainer = document.getElementById('imagePreview');
+            qrPlaceholder = document.getElementById('qrPlaceholder');
+            
+            // Setup file input handler
+            document.getElementById('imageFile').addEventListener('change', handleImageUpload);
+            
+            // Setup QR position inputs
+            document.getElementById('qrXInput').addEventListener('input', updateQRFromInputs);
+            document.getElementById('qrYInput').addEventListener('input', updateQRFromInputs);
+            document.getElementById('qrSizeInput').addEventListener('input', updateQRFromInputs);
+            
+            // Setup drag and drop for QR code
+            setupQRDragging();
+            
+            // Setup form submission
+            document.getElementById('templateForm').addEventListener('submit', handleFormSubmit);
+            
+            // Setup preview button
+            document.getElementById('previewBtn').addEventListener('click', generateRealPreview);
+        });
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Clear placeholder
+                    document.getElementById('placeholderText').style.display = 'none';
+                    
+                    // Set background image
+                    previewContainer.style.backgroundImage = `url(${e.target.result})`;
+                    previewContainer.style.backgroundSize = 'contain';
+                    previewContainer.style.backgroundRepeat = 'no-repeat';
+                    previewContainer.style.backgroundPosition = 'center';
+                    previewContainer.style.height = '600px';
+                    
+                    // Show QR placeholder
+                    qrPlaceholder.style.display = 'block';
+                    
+                    // Enable preview button
+                    document.getElementById('previewBtn').disabled = false;
+                    
+                    imageLoaded = true;
+                    updateMiniPreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setupQRDragging() {
+            // Mouse events for dragging
+            qrPlaceholder.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('resize-handle')) {
+                    isResizing = true;
+                    return;
+                }
+                
+                isDragging = true;
+                const rect = qrPlaceholder.getBoundingClientRect();
+                const containerRect = previewContainer.getBoundingClientRect();
+                
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    const containerRect = previewContainer.getBoundingClientRect();
+                    const newX = e.clientX - containerRect.left - dragOffset.x;
+                    const newY = e.clientY - containerRect.top - dragOffset.y;
+                    
+                    // Constrain to container bounds
+                    const maxX = previewContainer.offsetWidth - qrPlaceholder.offsetWidth;
+                    const maxY = previewContainer.offsetHeight - qrPlaceholder.offsetHeight;
+                    
+                    const constrainedX = Math.max(0, Math.min(newX, maxX));
+                    const constrainedY = Math.max(0, Math.min(newY, maxY));
+                    
+                    qrPlaceholder.style.left = constrainedX + 'px';
+                    qrPlaceholder.style.top = constrainedY + 'px';
+                    
+                    // Update input fields and hidden fields
+                    document.getElementById('qrXInput').value = Math.round(constrainedX);
+                    document.getElementById('qrYInput').value = Math.round(constrainedY);
+                    document.getElementById('qrPositionX').value = Math.round(constrainedX);
+                    document.getElementById('qrPositionY').value = Math.round(constrainedY);
+                    
+                    updateMiniPreview();
+                } else if (isResizing) {
+                    const containerRect = previewContainer.getBoundingClientRect();
+                    const newSize = Math.max(50, Math.min(500, e.clientX - containerRect.left - parseInt(qrPlaceholder.style.left)));
+                    
+                    qrPlaceholder.style.width = newSize + 'px';
+                    qrPlaceholder.style.height = newSize + 'px';
+                    
+                    // Update input fields and hidden fields
+                    document.getElementById('qrSizeInput').value = newSize;
+                    document.getElementById('qrSize').value = newSize;
+                    
+                    updateMiniPreview();
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+                isResizing = false;
+            });
+        }
+
+        function updateQRFromInputs() {
+            if (!imageLoaded) return;
+            
+            const x = parseInt(document.getElementById('qrXInput').value) || 0;
+            const y = parseInt(document.getElementById('qrYInput').value) || 0;
+            const size = parseInt(document.getElementById('qrSizeInput').value) || 200;
+            
+            qrPlaceholder.style.left = x + 'px';
+            qrPlaceholder.style.top = y + 'px';
+            qrPlaceholder.style.width = size + 'px';
+            qrPlaceholder.style.height = size + 'px';
+            
+            // Update hidden fields
+            document.getElementById('qrPositionX').value = x;
+            document.getElementById('qrPositionY').value = y;
+            document.getElementById('qrSize').value = size;
+            
+            updateMiniPreview();
+        }
+
+        function setQRPosition(x, y) {
+            document.getElementById('qrXInput').value = x;
+            document.getElementById('qrYInput').value = y;
+            updateQRFromInputs();
+        }
+
+        function updateMiniPreview() {
+            if (!imageLoaded) return;
+            
+            const x = parseInt(document.getElementById('qrPositionX').value);
+            const y = parseInt(document.getElementById('qrPositionY').value);
+            const size = parseInt(document.getElementById('qrSize').value);
+            
+            // Scale to mini preview (100px wide container)
+            const scaleX = 100 / previewContainer.offsetWidth;
+            const scaleY = 150 / previewContainer.offsetHeight;
+            
+            const miniQR = document.getElementById('miniQR');
+            miniQR.style.left = (x * scaleX) + 'px';
+            miniQR.style.top = (y * scaleY) + 'px';
+            miniQR.style.width = (size * scaleX) + 'px';
+            miniQR.style.height = (size * scaleY) + 'px';
+        }
+
+        async function generateRealPreview() {
+            if (!imageLoaded) {
+                alert('Please upload an image first');
+                return;
+            }
+            
+            const btn = document.getElementById('previewBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            try {
+                // Create a temporary template to get preview
+                const formData = new FormData();
+                formData.append('imageFile', document.getElementById('imageFile').files[0]);
+                formData.append('qrPositionX', document.getElementById('qrPositionX').value);
+                formData.append('qrPositionY', document.getElementById('qrPositionY').value);
+                formData.append('qrSize', document.getElementById('qrSize').value);
+                
+                // For now, show a placeholder - you could implement a preview endpoint
+                document.getElementById('realPreviewImage').src = previewContainer.style.backgroundImage.slice(5, -2);
+                new bootstrap.Modal(document.getElementById('previewModal')).show();
+                
+            } catch (error) {
+                alert('Error generating preview: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            if (!imageLoaded) {
+                alert('Please upload an image first');
+                return;
+            }
+            
+            const formData = new FormData();
+            const form = e.target;
+            
+            // Add all form fields
+            formData.append('eventId', form.eventId.value);
+            formData.append('imageFile', form.imageFile.files[0]);
+            formData.append('templateName', form.templateName.value);
+            formData.append('qrPositionX', form.qrPositionX.value);
+            formData.append('qrPositionY', form.qrPositionY.value);
+            formData.append('qrSize', form.qrSize.value);
+            formData.append('isDefault', form.isDefault.checked);
+            formData.append('isVipTemplate', form.isVipTemplate.checked);
+            
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            
+            try {
+                const response = await fetch('@Url.Action("CreateTemplate")', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    window.location.href = '@Url.Action("Templates", new { eventId = ViewBag.EventId })';
+                } else {
+                    alert('Error creating template. Please try again.');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    </script>
+}

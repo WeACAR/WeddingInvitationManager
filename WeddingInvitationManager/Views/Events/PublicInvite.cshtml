@@ -1,0 +1,322 @@
+@model WeddingInvitationManager.Models.Event
+
+@{
+    ViewData["Title"] = $"Get Your Invitation - {Model.Name}";
+    Layout = null; // Use a clean layout for public access
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .invitation-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .event-header {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        .phone-input {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        .phone-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-get-invitation {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-get-invitation:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .qr-result {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+        }
+        .qr-code-display {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .guest-info {
+            background: linear-gradient(45deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .event-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid d-flex align-items-center justify-content-center min-vh-100 py-4">
+        <div class="col-lg-6 col-md-8 col-sm-10">
+            <div class="invitation-card">
+                <div class="event-header">
+                    <h1 class="mb-2"><i class="fas fa-heart"></i> @Model.Name</h1>
+                    <p class="mb-0 h5">@Model.Date.ToString("dddd, MMMM dd, yyyy")</p>
+                    @if (!string.IsNullOrEmpty(Model.LocationLink))
+                    {
+                        <p class="mb-0"><i class="fas fa-map-marker-alt"></i> @Model.LocationLink</p>
+                    }
+                </div>
+
+                <div class="p-4">
+                    <div id="phone-entry-section">
+                        <h4 class="text-center mb-4">Get Your Personal Invitation</h4>
+                        <p class="text-center text-muted mb-4">
+                            Enter your phone number to retrieve your personalized QR code invitation.
+                        </p>
+
+                        <form id="phoneForm" class="mb-4">
+                            <div class="mb-3">
+                                <label for="phoneNumber" class="form-label fw-bold">Phone Number</label>
+                                <input type="tel" class="form-control phone-input" id="phoneNumber" 
+                                       placeholder="Enter your phone number" required>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> Enter the phone number you provided when registering
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-get-invitation">
+                                    <span class="button-text">
+                                        <i class="fas fa-qrcode me-2"></i>Get My Invitation
+                                    </span>
+                                    <span class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div id="error-message" class="error-message" style="display: none;"></div>
+                    </div>
+
+                    <div id="invitation-result" style="display: none;">
+                        <div class="guest-info text-center">
+                            <h4 class="mb-2">Welcome, <span id="guest-name"></span>!</h4>
+                            <div id="guest-details" class="text-muted"></div>
+                        </div>
+
+                        <div class="qr-result">
+                            <h5 class="mb-3">Your Personal QR Code</h5>
+                            <div class="qr-code-display mb-3">
+                                <img id="qr-code-image" src="" alt="QR Code" style="max-width: 200px; height: auto;">
+                            </div>
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-mobile-alt me-2"></i>
+                                Show this QR code at the event entrance
+                            </p>
+                            <button class="btn btn-outline-primary" onclick="downloadQR()">
+                                <i class="fas fa-download me-2"></i>Download QR Code
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="shareQR()">
+                                <i class="fas fa-share-alt me-2"></i>Share
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button class="btn btn-link" onclick="resetForm()">
+                                <i class="fas fa-arrow-left me-2"></i>Try Another Number
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-white">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Your information is secure and will only be used for this event.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('phoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const buttonText = submitBtn.querySelector('.button-text');
+            const loadingSpinner = submitBtn.querySelector('.loading-spinner');
+            const errorDiv = document.getElementById('error-message');
+            
+            // Validate phone number
+            if (!phoneNumber) {
+                showError('Please enter your phone number.');
+                return;
+            }
+            
+            // Show loading state
+            buttonText.style.display = 'none';
+            loadingSpinner.style.display = 'inline';
+            submitBtn.disabled = true;
+            hideError();
+            
+            try {
+                const response = await fetch('@Url.Action("GetMyInvitation", "Events")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': '@Html.AntiForgeryToken()'
+                    },
+                    body: `eventId=@Model.Id&phoneNumber=${encodeURIComponent(phoneNumber)}`
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showInvitation(result);
+                } else {
+                    showError(result.message || 'Unable to find your invitation. Please check your phone number.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred. Please try again.');
+            } finally {
+                // Reset button state
+                buttonText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        function showInvitation(data) {
+            document.getElementById('guest-name').textContent = data.guestName;
+            
+            // Set guest details
+            const guestDetails = document.getElementById('guest-details');
+            let detailsHtml = '';
+            if (data.isVip) {
+                detailsHtml += '<span class="badge bg-gold me-2"><i class="fas fa-crown"></i> VIP Guest</span>';
+            }
+            if (data.category) {
+                detailsHtml += `<span class="badge bg-secondary">${data.category}</span>`;
+            }
+            guestDetails.innerHTML = detailsHtml;
+            
+            // Show QR code - for now we'll create a placeholder
+            // In a real implementation, you'd generate the actual QR code image
+            const qrImg = document.getElementById('qr-code-image');
+            qrImg.src = `data:image/svg+xml;base64,${btoa(createQRPlaceholder(data.qrCode))}`;
+            qrImg.alt = `QR Code for ${data.guestName}`;
+            
+            // Hide form and show result
+            document.getElementById('phone-entry-section').style.display = 'none';
+            document.getElementById('invitation-result').style.display = 'block';
+        }
+        
+        function createQRPlaceholder(qrCode) {
+            return `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="200" fill="white"/>
+                <text x="100" y="100" font-family="Arial" font-size="12" text-anchor="middle" dy=".3em">
+                    QR Code: ${qrCode}
+                </text>
+            </svg>`;
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function resetForm() {
+            document.getElementById('phone-entry-section').style.display = 'block';
+            document.getElementById('invitation-result').style.display = 'none';
+            document.getElementById('phoneNumber').value = '';
+            hideError();
+        }
+        
+        function downloadQR() {
+            const qrImg = document.getElementById('qr-code-image');
+            const link = document.createElement('a');
+            link.download = 'invitation-qr-code.png';
+            link.href = qrImg.src;
+            link.click();
+        }
+        
+        function shareQR() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Invitation QR Code',
+                    text: 'Here is my invitation QR code for @Model.Name',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Link copied to clipboard!');
+                });
+            }
+        }
+        
+        // Auto-format phone number as user types
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{3})(\d{3})/, '($1) $2');
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

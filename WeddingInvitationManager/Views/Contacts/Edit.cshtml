@@ -1,0 +1,137 @@
+@model Contact
+@using Microsoft.Extensions.Localization
+@using WeddingInvitationManager.Resources
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = SharedLocalizer["EditContact"];
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-edit me-2"></i>@SharedLocalizer["EditContact"]</h2>
+        <a asp-action="Manage" asp-route-eventId="@Model.EventId" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>@SharedLocalizer["BackToManage"]
+        </a>
+    </div>
+
+    @if (ViewData.ModelState.ErrorCount > 0)
+    {
+        <div class="alert alert-danger">
+            <h4>@SharedLocalizer["ValidationErrors"]</h4>
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>@SharedLocalizer["ContactInformation"]</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="EventId" />
+                        <input type="hidden" asp-for="CreatedAt" />
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">
+                                <i class="fas fa-user me-1"></i>@SharedLocalizer["Name"] *
+                            </label>
+                            <input asp-for="Name" class="form-control" placeholder="@SharedLocalizer["EnterContactName"]" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label">
+                                <i class="fas fa-phone me-1"></i>@SharedLocalizer["PhoneNumber"] *
+                            </label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="@SharedLocalizer["EnterPhoneNumber"]" required />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>@SharedLocalizer["Email"]
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="@SharedLocalizer["EnterEmail"]" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Category" class="form-label">
+                                <i class="fas fa-tags me-1"></i>@SharedLocalizer["Category"]
+                            </label>
+                            <input asp-for="Category" class="form-control" placeholder="@SharedLocalizer["EnterCategory"]" />
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                            <div class="form-text">@SharedLocalizer["CategoryHint"]</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsVip" class="form-check-input" type="checkbox" id="isVipSwitch" />
+                                <label class="form-check-label" for="isVipSwitch">
+                                    <i class="fas fa-star me-1"></i>@SharedLocalizer["VIPContact"]
+                                </label>
+                            </div>
+                            <div class="form-text">@SharedLocalizer["VIPContactHint"]</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Manage" asp-route-eventId="@Model.EventId" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>@SharedLocalizer["Cancel"]
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>@SharedLocalizer["SaveChanges"]
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Form validation feedback
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const phoneInput = document.querySelector('input[name="PhoneNumber"]');
+            
+            if (!nameInput.value.trim()) {
+                e.preventDefault();
+                nameInput.focus();
+                return false;
+            }
+            
+            if (!phoneInput.value.trim()) {
+                e.preventDefault();
+                phoneInput.focus();
+                return false;
+            }
+        });
+
+        // Auto-save indication
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Add visual feedback that changes are pending
+                const saveBtn = document.querySelector('button[type="submit"]');
+                if (saveBtn && !saveBtn.classList.contains('btn-warning')) {
+                    saveBtn.classList.remove('btn-primary');
+                    saveBtn.classList.add('btn-warning');
+                    saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>@SharedLocalizer["UnsavedChanges"]';
+                }
+            });
+        });
+    </script>
+}

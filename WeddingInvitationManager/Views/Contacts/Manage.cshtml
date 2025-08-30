@@ -1,0 +1,394 @@
+@model List<WeddingInvitationManager.Models.Contact>
+@using Microsoft.Extensions.Localization
+@using WeddingInvitationManager.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["ManageContacts"];
+}
+
+@Html.AntiForgeryToken()
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>@Localizer["ManageContacts"]</h1>
+        <p class="text-muted mb-0">@ViewBag.EventName - @Model.Count @Localizer["ContactsTotal"]</p>
+    </div>
+    <div>
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@ViewBag.EventId" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-arrow-left"></i> @Localizer["BackToEvent"]
+        </a>
+        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@ViewBag.EventId" class="btn btn-primary">
+            <i class="fas fa-plus"></i> @Localizer["ImportContacts"]
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.Any())
+{
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchContacts" class="form-control" placeholder="@Localizer["SearchContacts"]...">
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-filter"></i> @Localizer["Filter"]
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item filter-option" href="#" data-filter="all">@Localizer["AllContacts"]</a></li>
+                    <li><a class="dropdown-item filter-option" href="#" data-filter="vip">@Localizer["VIPOnly"]</a></li>
+                    <li><a class="dropdown-item filter-option" href="#" data-filter="regular">@Localizer["RegularOnly"]</a></li>
+                </ul>
+            </div>
+            <a asp-controller="Contacts" asp-action="Export" asp-route-eventId="@ViewBag.EventId" asp-route-format="csv" class="btn btn-outline-success">
+                <i class="fas fa-download"></i> @Localizer["ExportCSV"]
+            </a>
+            <a asp-controller="Contacts" asp-action="Export" asp-route-eventId="@ViewBag.EventId" asp-route-format="excel" class="btn btn-outline-success">
+                <i class="fas fa-download"></i> @Localizer["ExportExcel"]
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="contactsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Name"]</th>
+                            <th>@Localizer["PhoneNumber"]</th>
+                            <th>@Localizer["Email"]</th>
+                            <th>@Localizer["Category"]</th>
+                            <th width="80">@Localizer["VIP"]</th>
+                            <th>@Localizer["Status"]</th>
+                            <th>@Localizer["CreatedAt"]</th>
+                            <th width="120">@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var contact in Model)
+                        {
+                            <tr class="contact-row" data-vip="@contact.IsVip.ToString().ToLower()">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (contact.IsVip)
+                                        {
+                                            <span class="badge bg-warning text-dark me-2">
+                                                <i class="fas fa-crown"></i> @Localizer["VIP"]
+                                            </span>
+                                        }
+                                        <strong>@contact.Name</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="tel:@contact.PhoneNumber" class="text-decoration-none">
+                                        <i class="fas fa-phone text-success"></i> @contact.PhoneNumber
+                                    </a>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(contact.Email))
+                                    {
+                                        <a href="mailto:@contact.Email" class="text-decoration-none">
+                                            <i class="fas fa-envelope text-primary"></i> @contact.Email
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">@Localizer["NotProvided"]</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(contact.Category))
+                                    {
+                                        <span class="badge bg-secondary">@contact.Category</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input vip-checkbox" 
+                                               type="checkbox" 
+                                               @(contact.IsVip ? "checked" : "") 
+                                               data-contact-id="@contact.Id"
+                                               title="@Localizer["ToggleVIPStatus"]">
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var invitation = contact.Invitations?.FirstOrDefault();
+                                    }
+                                    @if (invitation != null)
+                                    {
+                                        @if (invitation.IsUsed)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> @Localizer["Attended"]
+                                            </span>
+                                        }
+                                        else if (invitation.IsSent)
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-paper-plane"></i> @Localizer["InvitationSent"]
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock"></i> @Localizer["Pending"]
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-user-plus"></i> @Localizer["NoInvitation"]
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        @contact.CreatedAt.ToString("MMM dd, yyyy")
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a asp-action="Edit" asp-route-id="@contact.Id" class="btn btn-outline-primary btn-sm" title="@Localizer["Edit"]">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteContact(@contact.Id, '@contact.Name')" title="@Localizer["Delete"]">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Count</h4>
+                    <small>@Localizer["TotalContacts"]</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Count(c => c.IsVip)</h4>
+                    <small>@Localizer["VIPContacts"]</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Count(c => !string.IsNullOrEmpty(c.Email))</h4>
+                    <small>@Localizer["WithEmail"]</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Count(c => c.Invitations != null && c.Invitations.Any(i => i.IsSent))</h4>
+                    <small>@Localizer["InvitationsSent"]</small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-users text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted">@Localizer["NoContactsFound"]</h4>
+        <p class="text-muted mb-4">@Localizer["GetStartedByImporting"]</p>
+        <a asp-controller="Contacts" asp-action="Import" asp-route-eventId="@ViewBag.EventId" class="btn btn-primary">
+            <i class="fas fa-plus"></i> @Localizer["ImportContacts"]
+        </a>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["ConfirmDelete"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>@Localizer["AreYouSureDelete"] <strong id="contactName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="eventId" value="@ViewBag.EventId" />
+                    <button type="submit" class="btn btn-danger">@Localizer["Delete"]</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Search functionality
+        document.getElementById('searchContacts').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#contactsTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const filter = this.dataset.filter;
+                const rows = document.querySelectorAll('#contactsTable tbody tr');
+                
+                rows.forEach(row => {
+                    const isVip = row.dataset.vip === 'true';
+                    let show = true;
+                    
+                    if (filter === 'vip' && !isVip) show = false;
+                    if (filter === 'regular' && isVip) show = false;
+                    
+                    row.style.display = show ? '' : 'none';
+                });
+            });
+        });
+
+        // VIP checkbox functionality
+        document.querySelectorAll('.vip-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const contactId = this.dataset.contactId;
+                const isVip = this.checked;
+                const row = this.closest('tr');
+                const nameCell = row.querySelector('td:first-child');
+                
+                // Show loading state
+                this.disabled = true;
+                
+                // Send AJAX request
+                fetch('@Url.Action("UpdateVipStatus", "Contacts")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: `contactId=${contactId}&isVip=${isVip}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the VIP badge in the name column
+                        const existingBadge = nameCell.querySelector('.badge');
+                        if (isVip) {
+                            if (!existingBadge) {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge bg-warning text-dark me-2';
+                                badge.innerHTML = '<i class="fas fa-crown"></i> @Localizer["VIP"]';
+                                nameCell.querySelector('.d-flex').insertBefore(badge, nameCell.querySelector('strong'));
+                            }
+                        } else {
+                            if (existingBadge) {
+                                existingBadge.remove();
+                            }
+                        }
+                        
+                        // Update row data attribute
+                        row.dataset.vip = isVip.toString();
+                        
+                        // Show success feedback
+                        const toast = document.createElement('div');
+                        toast.className = 'toast position-fixed top-0 end-0 m-3';
+                        toast.setAttribute('role', 'alert');
+                        toast.innerHTML = `
+                            <div class="toast-header">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong class="me-auto">@Localizer["Success"]</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                            </div>
+                            <div class="toast-body">
+                                @Localizer["VIPStatusUpdated"]
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        new bootstrap.Toast(toast).show();
+                        
+                        // Remove toast after it's hidden
+                        toast.addEventListener('hidden.bs.toast', () => {
+                            toast.remove();
+                        });
+                    } else {
+                        // Revert checkbox on error
+                        this.checked = !isVip;
+                        alert('@Localizer["ErrorUpdatingVIPStatus"]');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.checked = !isVip;
+                    alert('@Localizer["ErrorUpdatingVIPStatus"]');
+                })
+                .finally(() => {
+                    this.disabled = false;
+                });
+            });
+        });
+
+        // Delete contact function
+        function deleteContact(contactId, contactName) {
+            document.getElementById('contactName').textContent = contactName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "Contacts")/' + contactId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}
+        }
+
+        // Edit contact function (placeholder)
+        function editContact(contactId) {
+            // TODO: Implement edit functionality
+            alert('@Localizer["EditFunctionality"]');
+        }
+    </script>
+}
