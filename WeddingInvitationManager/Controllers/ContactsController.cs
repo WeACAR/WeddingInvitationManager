@@ -279,6 +279,18 @@ public class ContactsController : Controller
         {
             try
             {
+                // Check for duplicate phone number (excluding current contact)
+                var duplicateExists = await _context.Contacts
+                    .AnyAsync(c => c.EventId == existingContact.EventId && 
+                                   c.PhoneNumber == contact.PhoneNumber && 
+                                   c.Id != contact.Id);
+
+                if (duplicateExists)
+                {
+                    ModelState.AddModelError("PhoneNumber", "A contact with this phone number already exists for this event.");
+                    return View(contact);
+                }
+
                 existingContact.Name = contact.Name;
                 existingContact.PhoneNumber = contact.PhoneNumber;
                 existingContact.Email = contact.Email;
@@ -290,6 +302,11 @@ public class ContactsController : Controller
 
                 TempData["Success"] = "Contact updated successfully!";
                 return RedirectToAction("Manage", new { eventId = existingContact.EventId });
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+            {
+                ModelState.AddModelError("PhoneNumber", "A contact with this phone number already exists for this event.");
+                return View(contact);
             }
             catch (DbUpdateConcurrencyException)
             {

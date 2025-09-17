@@ -158,6 +158,71 @@ namespace WeddingInvitationManager.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("WeddingInvitationManager.Models.AnonymousInvitation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatchNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DownloadType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GuestName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("GuestNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("QRCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QRCode")
+                        .IsUnique();
+
+                    b.HasIndex("EventId", "BatchNumber");
+
+                    b.HasIndex("EventId", "GuestNumber")
+                        .IsUnique();
+
+                    b.ToTable("AnonymousInvitations");
+                });
+
             modelBuilder.Entity("WeddingInvitationManager.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -430,12 +495,31 @@ namespace WeddingInvitationManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("InvitationId")
+                    b.Property<int?>("AnonymousInvitationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("GuestName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("InvitationId")
                         .HasColumnType("integer");
 
                     b.Property<string>("IpAddress")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsVip")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
@@ -453,6 +537,10 @@ namespace WeddingInvitationManager.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AnonymousInvitationId");
+
+                    b.HasIndex("EventId");
 
                     b.HasIndex("InvitationId");
 
@@ -512,6 +600,17 @@ namespace WeddingInvitationManager.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("WeddingInvitationManager.Models.AnonymousInvitation", b =>
+                {
+                    b.HasOne("WeddingInvitationManager.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("WeddingInvitationManager.Models.Contact", b =>
                 {
                     b.HasOne("WeddingInvitationManager.Models.Event", "Event")
@@ -555,11 +654,15 @@ namespace WeddingInvitationManager.Migrations
 
             modelBuilder.Entity("WeddingInvitationManager.Models.QRScan", b =>
                 {
+                    b.HasOne("WeddingInvitationManager.Models.AnonymousInvitation", "AnonymousInvitation")
+                        .WithMany()
+                        .HasForeignKey("AnonymousInvitationId");
+
                     b.HasOne("WeddingInvitationManager.Models.Invitation", "Invitation")
                         .WithMany("QRScans")
-                        .HasForeignKey("InvitationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("InvitationId");
+
+                    b.Navigation("AnonymousInvitation");
 
                     b.Navigation("Invitation");
                 });

@@ -66,8 +66,16 @@ public class ContactImportService : IContactImportService
 
             if (validContacts.Any())
             {
-                _context.Contacts.AddRange(validContacts);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Contacts.AddRange(validContacts);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    // Handle unique constraint violation (duplicate phone numbers)
+                    throw new InvalidOperationException("One or more contacts have duplicate phone numbers. Each phone number must be unique within an event.", ex);
+                }
             }
 
             return validContacts;

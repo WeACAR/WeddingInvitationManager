@@ -6,9 +6,13 @@ public class QRScan
 {
     public int Id { get; set; }
 
-    [Required]
-    public int InvitationId { get; set; }
-    public Invitation Invitation { get; set; } = null!;
+    // For regular invitations
+    public int? InvitationId { get; set; }
+    public Invitation? Invitation { get; set; }
+
+    // For anonymous invitations
+    public int? AnonymousInvitationId { get; set; }
+    public AnonymousInvitation? AnonymousInvitation { get; set; }
 
     [Required]
     [StringLength(100)]
@@ -23,6 +27,18 @@ public class QRScan
 
     [StringLength(50)]
     public string? IpAddress { get; set; }
+
+    // For easy access to guest information regardless of invitation type
+    [StringLength(200)]
+    public string GuestName { get; set; } = string.Empty;
+
+    [StringLength(100)]
+    public string Category { get; set; } = string.Empty;
+
+    public bool IsVip { get; set; }
+
+    [Required]
+    public int EventId { get; set; }
 }
 
 public enum ScanResult

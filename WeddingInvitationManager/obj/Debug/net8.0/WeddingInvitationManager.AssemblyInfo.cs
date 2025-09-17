@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingInvitationManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+261e985e8d5af562ad31e06325243f8a592d2885")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aa4c17c75c15b158b88041f27b83ffd0f02feec4")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingInvitationManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingInvitationManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

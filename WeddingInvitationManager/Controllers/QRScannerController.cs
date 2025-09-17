@@ -78,6 +78,9 @@ public class QRScannerController : Controller
                 request.EventId,
                 HttpContext.Connection.RemoteIpAddress?.ToString());
 
+            // Determine if scan is valid (only Valid result is considered successful)
+            var isValid = result.Result == Models.ScanResult.Valid;
+
             // Notify all connected clients about the scan
             await _hubContext.NotifyQRScanAsync(request.EventId, new
             {
@@ -87,14 +90,20 @@ public class QRScannerController : Controller
                 result.Category,
                 result.IsVip,
                 ScanTime = DateTime.UtcNow,
-                GuardName = request.GuardName
+                GuardName = request.GuardName,
+                IsValid = isValid
             });
 
             // Update stats
             var stats = await _qrScanService.GetScanStatsAsync(request.EventId);
             await _hubContext.NotifyStatsUpdateAsync(request.EventId, stats);
 
-            return Json(new { success = true, data = result });
+            return Json(new { 
+                success = true, 
+                data = result,
+                isValid = isValid,
+                message = result.Message
+            });
         }
         catch (Exception ex)
         {

@@ -36,6 +36,37 @@
     </div>
 }
 
+@if (TempData["ExistingAnonymousInvitations"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading">
+            <i class="fas fa-exclamation-triangle"></i> Existing Anonymous Invitations Found
+        </h5>
+        <p class="mb-3">@TempData["ExistingAnonymousInvitations"]</p>
+        <hr>
+        <div class="d-flex gap-2">
+            <form method="post" asp-action="DownloadExistingAnonymousInvitations" asp-route-eventId="@Model.Id" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="downloadType" value="@TempData["PendingDownloadType"]" />
+                <input type="hidden" name="templateId" value="@TempData["PendingTemplateId"]" />
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-download"></i> Download Existing
+                </button>
+            </form>
+            <form method="post" asp-action="ConfirmNewAnonymousInvitations" asp-route-eventId="@Model.Id" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="guestCount" value="@TempData["PendingGuestCount"]" />
+                <input type="hidden" name="downloadType" value="@TempData["PendingDownloadType"]" />
+                <input type="hidden" name="templateId" value="@TempData["PendingTemplateId"]" />
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-sync-alt"></i> Generate New Batch
+                </button>
+            </form>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <!-- Statistics Overview -->
 <div class="row mb-4">
     <div class="col-md-3">
@@ -100,6 +131,46 @@ else if (!Model.Templates.Any())
 }
 else
 {
+    var unusedContactInvitations = Model.Invitations.Where(i => !i.IsSent).Count();
+    var unusedAnonymousInvitations = 0;
+    if (ViewBag.AnonymousInvitations != null)
+    {
+        try 
+        {
+            var anonymousInvitations = (IEnumerable<dynamic>)ViewBag.AnonymousInvitations;
+            unusedAnonymousInvitations = anonymousInvitations.Count();
+        }
+        catch 
+        {
+            // If casting fails, default to 0
+            unusedAnonymousInvitations = 0;
+        }
+    }
+    var totalUnused = unusedContactInvitations + unusedAnonymousInvitations;
+    
+    if (totalUnused > 0)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h5><i class="fas fa-exclamation-triangle"></i> Unused Invitations</h5>
+            <p class="mb-2">You have <strong>@totalUnused</strong> generated but unused invitations:</p>
+            <ul class="mb-2">
+                @if (unusedContactInvitations > 0)
+                {
+                    <li><strong>@unusedContactInvitations</strong> contact invitations (generated but not sent)</li>
+                }
+                @if (unusedAnonymousInvitations > 0)
+                {
+                    <li><strong>@unusedAnonymousInvitations</strong> anonymous guest invitations</li>
+                }
+            </ul>
+            <p class="mb-0 small text-muted">
+                <i class="fas fa-info-circle"></i> 
+                Consider sending the contact invitations or downloading all unused invitations before generating new ones.
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
     <!-- Send Options -->
     <div class="row">
         <div class="col-md-8">
@@ -157,8 +228,14 @@ else
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a asp-action="Download" asp-route-eventId="@Model.Id" class="btn btn-outline-info">
+                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#downloadModal">
                             <i class="fas fa-download"></i> Download All Invitations
+                        </button>
+                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#anonymousModal">
+                            <i class="fas fa-user-plus"></i> Generate Anonymous Invitations
+                        </button>
+                        <a asp-action="Download" asp-route-eventId="@Model.Id" class="btn btn-outline-warning">
+                            <i class="fas fa-download"></i> Download Sent Invitations
                         </a>
                         <a asp-action="DownloadTemplates" asp-route-eventId="@Model.Id" class="btn btn-outline-secondary">
                             <i class="fas fa-file-archive"></i> Download Templates
@@ -308,3 +385,334 @@ else
         }
     </script>
 }
+
+<!-- Download All Invitations Modal -->
+<div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="downloadModalLabel">
+                    <i class="fas fa-download"></i> Download All Invitations
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Choose what type of invitations you want to download. This will include ALL contacts, regardless of whether invitations have been sent or not.
+                </div>
+                
+                <form id="downloadForm" method="post" asp-action="DownloadAllInvitationsWithAnonymous" asp-route-eventId="@Model.Id">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-image fa-3x text-primary"></i>
+                                    </div>
+                                    <h6 class="card-title">Full Invitation Templates</h6>
+                                    <p class="card-text small text-muted">
+                                        Download complete invitation images with your template design and embedded QR codes for each contact.
+                                    </p>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="downloadType" id="templateOption" value="template" checked>
+                                        <label class="form-check-label" for="templateOption">
+                                            <strong>With Templates</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-qrcode fa-3x text-success"></i>
+                                    </div>
+                                    <h6 class="card-title">QR Codes Only</h6>
+                                    <p class="card-text small text-muted">
+                                        Download just the QR code images for each contact. Useful if you want to print them separately or use your own design.
+                                    </p>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="downloadType" id="qrOption" value="qr-only">
+                                        <label class="form-check-label" for="qrOption">
+                                            <strong>QR Codes Only</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Selection (only shown when template option is selected) -->
+                    <div id="templateSelection" class="mt-3">
+                        @if (Model.Templates.Any())
+                        {
+                            <div class="row">
+                                <div class="col-12">
+                                    <label class="form-label">Select Template:</label>
+                                    <select name="templateId" class="form-select">
+                                        <option value="">Use Default Template</option>
+                                        @foreach (var template in Model.Templates)
+                                        {
+                                            <option value="@template.Id" selected="@(template.IsDefault)">
+                                                @template.Name @(template.IsDefault ? "(Default)" : "")
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Anonymous Guest Count -->
+                    <div class="mt-3">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info small">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Anonymous Guests:</strong> Add extra invitations for unknown guests (walk-ins, plus-ones, etc.)
+                                </div>
+                                <label class="form-label">Number of Anonymous Guest Invitations:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-users"></i>
+                                    </span>
+                                    <input type="number" name="anonymousGuestCount" class="form-control" 
+                                           min="0" max="500" value="0" 
+                                           placeholder="Enter number of anonymous invitations (0-500)">
+                                </div>
+                                <small class="text-muted">
+                                    These will be named "Guest 1", "Guest 2", etc. (or "ضيف ١", "ضيف ٢" in Arabic)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="submitDownload()">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide template selection based on download type
+    document.addEventListener('DOMContentLoaded', function() {
+        const templateOption = document.getElementById('templateOption');
+        const qrOption = document.getElementById('qrOption');
+        const templateSelection = document.getElementById('templateSelection');
+        
+        function toggleTemplateSelection() {
+            if (qrOption.checked) {
+                templateSelection.style.display = 'none';
+            } else {
+                templateSelection.style.display = 'block';
+            }
+        }
+        
+        templateOption.addEventListener('change', toggleTemplateSelection);
+        qrOption.addEventListener('change', toggleTemplateSelection);
+        
+        // Initial state
+        toggleTemplateSelection();
+    });
+    
+    function submitDownload() {
+        const form = document.getElementById('downloadForm');
+        const button = event.target;
+        
+        // Show loading state
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        button.disabled = true;
+        
+        // Reset button after a delay to provide feedback
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 5000);
+        
+        // Submit the form normally
+        form.submit();
+    }
+    
+    function submitAnonymousDownload() {
+        const form = document.getElementById('anonymousForm');
+        const button = event.target;
+        const guestCount = document.getElementById('anonymousGuestCount').value;
+        const downloadType = document.getElementById('anonymousDownloadType').value;
+        
+        if (!guestCount || guestCount <= 0) {
+            alert('Please enter a valid number of guests (1 or more).');
+            return;
+        }
+        
+        if (guestCount > 500) {
+            alert('Maximum 500 anonymous invitations allowed.');
+            return;
+        }
+        
+        // Show loading state
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        button.disabled = true;
+        
+        // Create a temporary iframe for the download
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        // Set the form target to the iframe
+        form.target = iframe.name = 'download_frame_' + Date.now();
+        iframe.name = form.target;
+        
+        // Submit the form normally (this handles file downloads properly)
+        form.submit();
+        
+        // Reset button after a delay and show success
+        setTimeout(() => {
+            button.innerHTML = '<i class="fas fa-check"></i> Generated & Downloaded!';
+            button.classList.remove('btn-success');
+            button.classList.add('btn-info');
+            
+            // Close modal and reset after success
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('anonymousModal'));
+                modal.hide();
+                button.innerHTML = originalText;
+                button.disabled = false;
+                button.classList.remove('btn-info');
+                button.classList.add('btn-success');
+                
+                // Clean up the iframe
+                document.body.removeChild(iframe);
+            }, 2000);
+        }, 3000);
+    }
+
+    function toggleAnonymousTemplateSelection() {
+        const downloadType = document.getElementById('anonymousDownloadType').value;
+        const templateSection = document.getElementById('anonymousTemplateSection');
+        
+        if (downloadType === 'qr-only') {
+            templateSection.style.display = 'none';
+        } else {
+            templateSection.style.display = 'block';
+        }
+    }
+
+    // Initialize template section visibility on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleAnonymousTemplateSelection();
+    });
+</script>
+
+<!-- Anonymous Invitations Modal -->
+<div class="modal fade" id="anonymousModal" tabindex="-1" aria-labelledby="anonymousModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="anonymousModalLabel">
+                    <i class="fas fa-user-plus"></i> Generate Anonymous Guest Invitations
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Generate invitations for unknown guests (walk-ins, plus-ones, etc.). These will be numbered sequentially to help guards identify guests.
+                </div>
+                
+                <form id="anonymousForm" method="post" asp-action="GenerateAnonymousInvitations" asp-route-eventId="@Model.Id">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="anonymousGuestCount" class="form-label">
+                                    <i class="fas fa-users"></i> Number of Anonymous Invitations:
+                                </label>
+                                <input type="number" id="anonymousGuestCount" name="guestCount" 
+                                       class="form-control form-control-lg text-center" 
+                                       min="1" max="500" value="10" required>
+                                <small class="text-muted">Maximum: 500 invitations</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-download"></i> Download Type:
+                                </label>
+                                <select name="downloadType" id="anonymousDownloadType" class="form-select" onchange="toggleAnonymousTemplateSelection()">
+                                    <option value="template">Full Invitation Templates</option>
+                                    <option value="qr-only">QR Codes Only</option>
+                                </select>
+                                <small class="text-muted">Choose between complete invitation designs or just QR codes</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="anonymousTemplateSection">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-image"></i> Template:
+                                </label>
+                                @if (Model.Templates.Any())
+                                {
+                                    <select name="templateId" class="form-select">
+                                        <option value="">Use Default Template</option>
+                                        @foreach (var template in Model.Templates)
+                                        {
+                                            <option value="@template.Id" selected="@(template.IsDefault)">
+                                                @template.Name @(template.IsDefault ? "(Default)" : "")
+                                            </option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning small">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        No templates available. Please create a template first.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-success small">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Guest Naming:</strong> Invitations will be named:
+                                <ul class="mb-0 mt-2">
+                                    <li><strong>English:</strong> "Guest 1", "Guest 2", "Guest 3", etc.</li>
+                                    <li><strong>Arabic:</strong> "ضيف ١", "ضيف ٢", "ضيف ٣", etc.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-success" onclick="submitAnonymousDownload()">
+                    <i class="fas fa-download"></i> Generate & Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

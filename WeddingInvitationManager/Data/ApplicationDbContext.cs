@@ -16,6 +16,7 @@ namespace WeddingInvitationManager.Data
         public DbSet<Invitation> Invitations { get; set; }
         public DbSet<QRScan> QRScans { get; set; }
         public DbSet<InvitationTemplate> InvitationTemplates { get; set; }
+        public DbSet<AnonymousInvitation> AnonymousInvitations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -43,11 +44,29 @@ namespace WeddingInvitationManager.Data
                 .HasIndex(q => q.InvitationId);
 
             builder.Entity<QRScan>()
+                .HasIndex(q => q.AnonymousInvitationId);
+
+            builder.Entity<QRScan>()
                 .HasIndex(q => q.ScannedAt);
+
+            builder.Entity<QRScan>()
+                .HasIndex(q => q.EventId);
 
             // InvitationTemplate configuration
             builder.Entity<InvitationTemplate>()
                 .HasIndex(t => t.EventId);
+
+            // AnonymousInvitation configuration
+            builder.Entity<AnonymousInvitation>()
+                .HasIndex(a => new { a.EventId, a.GuestNumber })
+                .IsUnique();
+
+            builder.Entity<AnonymousInvitation>()
+                .HasIndex(a => a.QRCode)
+                .IsUnique();
+
+            builder.Entity<AnonymousInvitation>()
+                .HasIndex(a => new { a.EventId, a.BatchNumber });
 
             // Configure DateTime properties to use UTC
             foreach (var entityType in builder.Model.GetEntityTypes())
